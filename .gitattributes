@@ -1,0 +1,17 @@
+# Git LFS tracking for large model files
+# If you want to commit trained models, install Git LFS first:
+#   brew install git-lfs
+#   git lfs install
+# Then these patterns will be tracked with LFS:
+
+*.pth filter=lfs diff=lfs merge=lfs -text
+*.pt filter=lfs diff=lfs merge=lfs -text
+*.ckpt filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
+
+# Mark Jupyter notebooks for proper diffing
+*.ipynb linguist-documentation diff=jupyternotebook
+
+# Markdown as documentation
+*.md linguist-documentation

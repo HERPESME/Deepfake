@@ -1,0 +1,49 @@
+# Deepfake Detection Project Requirements
+# Core ML Libraries
+torch>=2.0.0
+torchvision>=0.15.0
+tensorflow>=2.13.0
+transformers>=4.30.0
+timm>=0.9.0
+
+# Computer Vision
+opencv-python>=4.8.0
+Pillow>=10.0.0
+albumentations>=1.3.0
+mtcnn>=0.1.1
+dlib>=19.24.0
+face-recognition>=1.3.0
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Visualization and Reporting
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.15.0
+grad-cam>=1.4.0
+shap>=0.42.0
+reportlab>=4.0.0
+
+# Utilities
+requests>=2.31.0
+tqdm>=4.65.0
+jinja2>=3.1.0
+pyyaml>=6.0
+wandb>=0.15.0
+tensorboard>=2.13.0
+hydra-core>=1.3.0
+omegaconf>=2.3.0
+
+# Audio/Video Processing
+moviepy>=1.0.3
+librosa>=0.10.0
+soundfile>=0.12.0
+
+# Additional ML Tools
+clip-by-openai>=1.0
+faiss-cpu>=1.7.4
+einops>=0.6.0

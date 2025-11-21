@@ -1,0 +1,286 @@
+# Deepfake project .gitignore
+# Keep this file at the repository root. It ignores large datasets, virtual envs,
+# environment files, heavy model weights and common editor/OS files.
+
+####################
+# Environment / OS
+####################
+# Virtual environments
+deepfake_env/
+.venv/
+venv/
+env/
+
+# Environment variable files (do NOT commit secrets)
+.env
+.env.*
+*.env
+
+# macOS
+.DS_Store
+
+# Editor directories
+.vscode/
+.idea/
+
+####################
+# Python
+####################
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+####################
+# Datasets (large) - DO NOT push
+####################
+# Raw large dataset folders (user should download manually)
+data/raw/faceforensics/
+data/raw/celebd/
+data/raw/dfdc/
+data/raw/wilddeepfake/
+
+# Processed large datasets (if you preprocess locally, don't push them)
+data/processed/faceforensics/
+data/processed/celebd/
+data/processed/dfdc/
+data/processed/wilddeepfake/
+
+# Dataset archives or downloads
+data/raw/*.zip
+data/raw/*.tar
+data/raw/*.tar.gz
+
+####################
+# Experiments / models (large binaries)
+####################
+# Avoid committing large model checkpoints; keep training artifacts local
+experiments/**/final_model.pth
+experiments/**/checkpoint_*.pth
+experiments/**/checkpoints/
+**/*.pth
+**/*.pt
+
+####################
+# Logging / outputs / reports (optional)
+####################
+# Keep report PDF/HTML if desired; otherwise uncomment to ignore reports
+# reports/
+logs/
+
+####################
+# Data splits / temporary
+####################
+data/splits/
+
+####################
+# Misc
+####################
+# Large binaries
+*.ckpt
+*.h5
+*.onnx
+*.tflite
+
+# Backup files
+*~
+*.bak
+
+# Allow tracking of everything else (src, configs, notebooks, docs)
+# Deepfake Detection Project - .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+deepfake_env/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# PyTorch
+*.pth
+*.pt
+checkpoints/
+models/
+
+# Data directories
+data/raw/
+data/processed/
+data/splits/
+
+# Experiment outputs
+experiments/
+reports/
+logs/
+
+# Weights & Biases
+wandb/
+
+# TensorBoard
+runs/
+tensorboard/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Dataset files (too large for git)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.flv
+*.wmv
+
+# Model weights (too large for git)
+*.bin
+*.safetensors
+
+# Configuration files with sensitive data
+config_local.yaml
+secrets.yaml
+.env.local
+
+# Backup files
+*.bak
+*.backup
+*_backup.*
+
+# Log files
+*.log
+logs/
+
+# Cache directories
+.cache/
+cache/
+__pycache__/
+
+# Test outputs
+test_outputs/
+test_results/
+
+# Documentation builds
+docs/_build/
+docs/build/
+
+# Package files
+*.whl
+*.tar.gz

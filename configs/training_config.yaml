@@ -1,0 +1,56 @@
+# Training configuration for deepfake detection models
+
+# Model configuration
+model:
+  name: "xception"  # Options: xception, efficientnet_b0, efficientnet_b4, vit, resnet50, clip, hybrid_cnn_transformer
+  num_classes: 2
+  pretrained: true
+  dropout_rate: 0.5
+
+# Data configuration
+data:
+  dataset: "faceforensics"  # Options: faceforensics, celebd, dfdc, wilddeepfake
+  data_root: "data/processed"
+  image_size: 224
+  batch_size: 32
+  num_workers: 4
+  use_albumentations: true
+
+# Training configuration
+training:
+  epochs: 100
+  learning_rate: 5e-5  # Optimized for ResNet50 (lower than ViT to avoid plateauing)
+  weight_decay: 1e-4
+  optimizer: "adamw"  # Options: adam, adamw, sgd (AdamW better for ResNet50)
+  scheduler: "plateau"  # Options: cosine, step, plateau, warmup_cosine (plateau reduces LR only when validation stops improving)
+  early_stopping_patience: 20  # Increased patience to avoid early stopping (was 10 for ViT)
+  save_frequency: 5  # Save checkpoint every 5 epochs
+
+# Cross-dataset evaluation
+cross_dataset:
+  enabled: true
+  train_dataset: "faceforensics"
+  test_datasets: ["celebd", "dfdc", "wilddeepfake"]
+
+# Logging and monitoring
+logging:
+  use_wandb: false
+  wandb_project: "deepfake-detection"
+  log_frequency: 10
+
+# Output configuration
+output:
+  experiment_name: null  # Auto-generated if null
+  output_dir: "experiments"
+  save_predictions: true
+  generate_report: true
+
+# Advanced training options
+advanced:
+  mixed_precision: true  # Enabled for faster training (30-50% speedup)
+  gradient_clipping: 1.0
+  warmup_epochs: 5
+  label_smoothing: 0.0
+  focal_loss: false
+  focal_alpha: 0.25
+  focal_gamma: 2.0
