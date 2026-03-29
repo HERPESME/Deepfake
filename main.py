@@ -64,7 +64,14 @@ def train_model(args):
     logger.info(f"Learning rate: {config.training.learning_rate}")
 
     # Setup device
-    device = "cuda" if torch.cuda.is_available() and not args.cpu else "cpu"
+    if args.cpu:
+        device = "cpu"
+    elif torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
     logger.info(f"Device: {device}")
 
     # Create data loaders
@@ -221,7 +228,14 @@ def evaluate_model(args):
         config.data.data_root = args.data_root
 
     # Setup device
-    device = "cuda" if torch.cuda.is_available() and not args.cpu else "cpu"
+    if args.cpu:
+        device = "cpu"
+    elif torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
     logger.info(f"Device: {device}")
 
     # Load data
@@ -335,7 +349,14 @@ def cross_dataset_evaluation(args):
         config = ConfigLoader.create_default_config()
 
     # Setup device
-    device = "cuda" if torch.cuda.is_available() and not args.cpu else "cpu"
+    if args.cpu:
+        device = "cpu"
+    elif torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
 
     # Create model
     model_name = args.model or config.model.name
@@ -401,7 +422,14 @@ def inference_single(args):
     import numpy as np
 
     # Setup device
-    device = "cuda" if torch.cuda.is_available() and not args.cpu else "cpu"
+    if args.cpu:
+        device = "cpu"
+    elif torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
 
     # Load model
     model_name = args.model or "xception"

@@ -14,27 +14,27 @@
 \usepackage{multirow}
 \usepackage{float}
 \usepackage{subcaption}
+\usepackage{stfloats}
+\usepackage{placeins}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \begin{document}
 
-\title{Deepfake Detection Using Deep Learning: A Comparative Study of CNN and Transformer Architectures\\
-{\footnotesize \textsuperscript{*}This work was done as part of the Image \& Forensics Security course project}
-}
+\title{Deepfake Detection on Facial Features Using Deep Learning: A Comparative Study of CNN and Transformer Architectures}
 
-\author{\IEEEauthorblockN{Your Name}
-\IEEEauthorblockA{\textit{Department of Computer Science} \\
-\textit{Your University}\\
-City, Country \\
-email@university.edu}
+\author{\IEEEauthorblockN{Eeshan Singh Pokharia , Jayendra Singh}
+\IEEEauthorblockA{\textit{Department of Computer and Communication Engineering}\\
+\textit{The LNM Institute of Information and Technology}\\
+Jaipur, India \\
+info.lnmiit@lnmiit.ac.in}
 }
 
 \maketitle
 
 \begin{abstract}
-The rapid advancement of synthetic media generation techniques, particularly deepfakes, poses substantial challenges to digital content authenticity. This research conducts an empirical investigation comparing four contemporary deep learning frameworks for detecting manipulated facial content: EfficientNet-B0, XceptionNet, ResNet50, and Vision Transformer. Our experimental framework trains these architectures on the Celeb-DF dataset, where we observe test accuracies of 98.70\%, 98.76\%, 98.22\%, and 90.54\% respectively. To evaluate model robustness, we conduct cross-dataset experiments using FaceForensics++, which exposes notable performance reductions across all evaluated models. Interestingly, the Vision Transformer exhibits the most resilient generalization behavior, experiencing only a 24.48\% accuracy decline compared to CNN-based models that suffer drops exceeding 40\%. Through gradient-weighted class activation mapping (Grad-CAM), we demonstrate that all architectures concentrate their attention on facial regions during classification. These findings suggest that while convolutional networks excel at in-distribution recognition tasks, transformer-based models may offer superior adaptability when encountering distribution shifts, emphasizing the critical role of cross-dataset validation in developing practical deepfake detection systems.
+The rapid growth of synthetic media technologies, especially deepfakes, poses a serious threat to the credibility of online content. This study provides a practical comparison of four different deep learning models aimed at detecting manipulated faces: EfficientNet-B0, XceptionNet, ResNet50, and the Vision Transformer (ViT). Authors used the Celeb-DF dataset to train these models, achieving testing accuracies of 98.70\%, 98.76\%, 98.22\%, and 90.54\%, respectively. To evaluate how well these models deal with new data, authors conducted cross-dataset validation using FaceForensics++. The results showed a general drop in performance; however, the Vision Transformer showed better resilience. While the CNN-based models faced accuracy drops over 40\%, the ViT's accuracy decreased by only 24.48\%. Authors also used Gradient-weighted Class Activation Mapping (Grad-CAM) to visualize how the models make decisions, confirming that all models focus correctly on facial areas. These results suggest that while CNNs perform well with familiar data, transformer-based models may adjust better to changes in data distribution. This shows the need to test across different datasets to develop reliable forensic tools.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -42,107 +42,134 @@ deepfake detection, deep learning, computer vision, convolutional neural network
 \end{IEEEkeywords}
 
 \section{Introduction}
-Synthetic media generation has evolved from experimental research to accessible technology, enabling the creation of highly convincing fake images and videos. These artificially generated contents, commonly referred to as deepfakes, leverage sophisticated machine learning algorithms to manipulate visual media with remarkable realism. The implications extend beyond entertainment, encompassing serious concerns about information integrity, personal privacy, and societal trust in digital content.
+The technology for creating synthetic media has evolved from those early academic experiments to publicly available tools that let users create hyperrealistic fake videos and images. More commonly, these manipulations are called deepfakes. They are machine learning algorithms that alter visual content with convincing accuracy. The implications of this technology go beyond entertainment. There are serious concerns about privacy violations, trust in news, and a decline in public confidence in digital media.
 
-Contemporary research indicates that the majority of deepfake content serves non-consensual purposes, with applications spanning political disinformation campaigns, financial deception schemes, and character defamation \cite{deepfake_survey}. The democratization of generative models, including generative adversarial networks and recent diffusion-based approaches, has lowered the technical barriers for creating convincing synthetic media, thereby intensifying the urgency for reliable detection mechanisms.
+Recent surveys suggest that a significant share of deepfake content is produced without consent. This class of media is associated with political disinformation, identity theft, and harassment \cite{deepfake_survey}. With the improvement in generative models such as GANs and more recently diffusion models, it now requires less technical skill than ever to produce realistic fakes. This has created the imperative to develop robust detection systems.
 
-Early detection methodologies relied heavily on handcrafted features and statistical analysis of visual artifacts. However, as generation techniques have become more sophisticated, these traditional approaches have demonstrated limited effectiveness. Modern deep learning architectures have consequently emerged as the primary framework for addressing this challenge, offering the capacity to learn discriminative features directly from data.
+While older methods of detection focused on the manual or statistical finding of flaws or oddities within the media, such methods have grown increasingly less effective as generation algorithms have improved. Now, modern deep learning architectures are the standard for detection, pulling complex, distinguishing features directly from raw data.
 
-This investigation presents a systematic evaluation of four distinct deep learning architectures applied to the deepfake detection problem. We examine EfficientNet-B0, XceptionNet, ResNet50, and Vision Transformer, training each on the Celeb-DF dataset and subsequently assessing their generalization through evaluation on FaceForensics++. Our analysis incorporates interpretability techniques to understand model decision processes, providing insights into how different architectural choices influence both performance and robustness.
+The goal of the current paper is to systematically compare the performance of four different deep learning architectures for deepfake forensics: the EfficientNet-B0, XceptionNet, ResNet50, and the Vision Transformer. Models were trained on the Celeb-DF dataset and then tested on FaceForensics++ to check their generalization capability. Besides this, interpretability tools were included to look into the "black box" of these models, providing a clearer view of how different architectures affect accuracy and reliability.
 
 \subsection{Related Work}
-The field of deepfake detection has witnessed substantial evolution since the initial emergence of face-swapping technologies. Initial research directions explored frequency-domain analysis, seeking to identify telltale artifacts introduced during the generation process \cite{frequency_domain}. Alternative approaches examined temporal inconsistencies in video sequences, leveraging the observation that many early deepfake generation methods struggled to maintain temporal coherence \cite{temporal_analysis}. While these methods showed promise initially, their effectiveness diminished as generation algorithms improved.
+Deepfake detection has had to evolve quickly to match generation technologies. Early efforts focused on the frequency domain, looking for specific artifacts from the upsampling steps in GANs \cite{frequency_domain}. Other researchers looked at temporal cues - most of the early examples of deepfakes tended to flicker or not have appropriate transitions between frames \cite{temporal_analysis}. While these methods were initially effective, the newer generation techniques have mostly smoothed out these artifacts. Extended frequency domain analysis has been proposed to detect subtle artifacts in the Fourier spectrum that are difficult to perceive in the spatial domain \cite{frequency_extended}.
 
-Convolutional Neural Networks have demonstrated exceptional capability in deepfake detection tasks. XceptionNet, which employs depthwise separable convolutions, has been successfully adapted from its original image classification purpose to deepfake detection applications \cite{xception_deepfake}. EfficientNet's compound scaling methodology provides an elegant solution for balancing model capacity and computational efficiency \cite{efficientnet}. Residual networks, particularly ResNet variants, have consistently delivered strong performance across diverse computer vision applications, including deepfake identification \cite{resnet_deepfake}.
+Convolutional Neural Networks have been the standard for this task. XceptionNet, recognized for its depthwise separable convolutions, was successfully adjusted from general image classification to provide a solid baseline for deepfake detection \cite{xception_deepfake}. Similarly, EfficientNet's compound scaling allowed for improvements without significantly raising computational costs \cite{efficientnet}. ResNet architectures are still popular because they allow for training deep networks without problems linked to vanishing gradients. \cite{resnet_deepfake}. MesoNet introduced a lightweight CNN architecture for deepfake detection. It performed well while using fewer parameters \cite{mesonet}. The FaceForensics++ benchmark dataset has been instrumental in standardizing evaluation protocols, providing a comprehensive collection of manipulated videos using multiple generation techniques \cite{faceforensics}.
 
-The transformer architecture, which revolutionized natural language processing, has recently been adapted for visual recognition tasks. Vision Transformers partition images into patches and process them as token sequences, fundamentally altering how visual information is encoded and processed \cite{vit}. While transformers have shown competitive performance in various vision tasks, their application to deepfake detection remains relatively underexplored, presenting an opportunity for investigation.
+More recently, the Transformer architecture, which changed Natural Language Processing, has been adapted for vision applications. Vision Transformers (ViTs) break images into patches and treat these as sequences \cite{vit}. While in general computer vision, the performance of ViTs has been quite promising; however, for deepfake detection specifically, the use and behavior of ViTs are not studied as much as that of CNNs. Two-stream architectures have been suggested to merge spatial and temporal information. They make use of both frame-level features and motion patterns to improve detection accuracy \cite{two_stream}. Capsule networks have also shown promise in detecting deepfakes by preserving spatial hierarchies and relationships between facial features \cite{capsule_networks}.
 
-A critical observation from existing literature concerns the generalization limitations of current detection systems. Models trained on specific datasets frequently exhibit substantial performance degradation when evaluated on different datasets, revealing domain-specific learning patterns rather than generalizable detection capabilities \cite{cross_dataset}. This phenomenon underscores the importance of cross-dataset evaluation protocols in assessing the practical utility of detection systems.
+A major challenge put forth in the literature is the "generalization gap." Models tend to work well for the dataset that they are trained on but fail when presented with deepfakes from a different algorithm \cite{cross_dataset}. This shows that models often overfit on particular artifacts in a dataset instead of learning what really sets real and fake content apart. Multi-task learning approaches have been explored to improve generalization by jointly learning detection and auxiliary tasks such as face recognition or manipulation type classification \cite{multi_task}.
 
 \section{Contributions and Novelty}
-Our research contributes to the deepfake detection domain through several key aspects:
+To our knowledge, this is the first systematic comparison of EfficientNet-B0, XceptionNet, ResNet50, and Vision Transformer architectures for deepfake detection under identical training conditions with cross-dataset evaluation. This work advances the field through the following contributions:
 
 \begin{enumerate}
-    \item \textbf{Systematic Architecture Benchmarking:} We establish a controlled experimental framework enabling direct comparison of four architecturally distinct models (EfficientNet-B0, XceptionNet, ResNet50, and Vision Transformer) under identical training and evaluation conditions, facilitating meaningful performance analysis.
+    \item \textbf{Comparative Benchmarking:} Authors provide a controlled comparison of four distinct architectures under identical training constraints to ensure a fair assessment.
 
-    \item \textbf{Generalization Assessment:} Through rigorous cross-dataset evaluation protocols, we train models on Celeb-DF and test on FaceForensics++, uncovering critical insights regarding model robustness and domain transfer capabilities that extend beyond single-dataset performance metrics.
+    \item \textbf{Robustness Analysis:} Authors rigorously test generalization by training on Celeb-DF and evaluating on the unseen FaceForensics++ dataset, exposing the real-world limitations of these models.
 
-    \item \textbf{Transformer Architecture Exploration:} To the best of our knowledge, this represents one of the first thorough investigations of Vision Transformers specifically for deepfake detection, revealing their potential advantages in cross-domain generalization despite lower in-distribution accuracy.
+    \item \textbf{Key Finding on ViT Generalization:} Authors demonstrate that Vision Transformers exhibit significantly better cross-dataset resilience, with only a 24.48\% accuracy drop compared to over 42\% for CNNs.
 
-    \item \textbf{Interpretability Investigation:} We apply Grad-CAM visualization techniques uniformly across all four architectures, revealing consistent patterns in attention allocation and demonstrating that models learn to focus on facial regions rather than background elements.
+    \item \textbf{Explainability:} Using Grad-CAM, Authors visualize the attention maps of all four models, confirming that they focus on facial features rather than background noise.
 
-    \item \textbf{Reproducible Experimental Framework:} We provide a comprehensive, open-source implementation encompassing the complete pipeline from data preprocessing through model training, evaluation, and visualization, enabling replication and extension of our findings.
+    \item \textbf{Reproducibility:} Authors present a full, repeatable pipeline from preprocessing to evaluation to aid future research.
 \end{enumerate}
 
 \section{Proposed Work}
 
 \subsection{Dataset}
-Our experimental design incorporates two publicly available datasets:
+Authors utilized two prominent datasets for this study:
 
-\textbf{Celeb-DF (v2):} This dataset represents a curated collection of high-quality deepfake content, comprising 590 authentic videos and 5,639 synthetically generated videos. Through our preprocessing pipeline, we extract 1,736 real face images and 16,736 fake face images, resulting in a total of 18,472 processed samples. We partition this dataset using an 80-10-10 split for training, validation, and testing respectively, ensuring sufficient data for model development and unbiased evaluation.
+\textbf{Celeb-DF (v2):} This dataset is recognized for its high visual quality and includes 590 real videos and 5,639 fake videos. Our preprocessing resulted in 1,736 real face images and 16,736 fake face images, for a total of 18,472 images. Authors used an 80-10-10 split for training, validation, and testing. The Celeb-DF dataset was introduced by Li et al. and is publicly available for research purposes, designed specifically to address the limitations of earlier deepfake datasets by providing higher quality manipulations that are more challenging to detect \cite{cross_dataset}. The dataset primarily features celebrity faces and uses an improved deepfake generation method that produces fewer visible artifacts compared to earlier versions. This makes it particularly suitable for evaluating the robustness of detection algorithms under more realistic conditions.
 
-\textbf{FaceForensics++:} This comprehensive benchmark dataset contains 1,000 original video sequences that have been manipulated using six distinct generation techniques: Deepfakes, Face2Face, FaceSwap, NeuralTextures, FaceShifter, and DeepFakeDetection. Our preprocessing yields 2,992 authentic images and 17,789 synthetic images, totaling 20,781 samples. This dataset serves exclusively for cross-dataset evaluation, allowing us to assess model generalization without any training data overlap.
+\textbf{FaceForensics++:} This benchmark includes 1,000 original sequences manipulated by six different methods, such as Face2Face and NeuralTextures. Authors extracted 2,992 real images and 17,789 fake images, making a total of 20,781. It is important to note that this dataset was used only for testing to evaluate cross-dataset generalization. The FaceForensics++ dataset was created by Rössler et al. It acts as a solid standard for detecting facial manipulation. It includes various manipulation techniques, such as traditional computer graphics methods and deep learning approaches \cite{faceforensics}. The dataset is widely used in the research community and provides a standardized evaluation framework that allows for fair comparison across different detection methods.
 
 \subsection{Preprocessing Pipeline}
-Our data preparation methodology follows a standardized sequence of operations designed to ensure consistency and quality:
+To ensure the models focused solely on facial features, authors standardized the data input:
 
 \begin{enumerate}
-    \item \textbf{Frame Extraction:} We sample frames from video sequences at predetermined intervals, extracting every 30th frame from Celeb-DF videos and every 60th frame from FaceForensics++ videos to balance dataset size with computational efficiency.
+    \item \textbf{Frame Sampling:} Authors extracted frames at regular intervals. Authors took every 30th frame for Celeb-DF and every 60th frame for FaceForensics++ to control the amount of data.
 
-    \item \textbf{Face Detection:} We employ OpenCV's Haar Cascade classifier to identify facial regions within extracted frames, ensuring that subsequent processing focuses on relevant image content.
+    \item \textbf{Face Localization:} Authors used OpenCV's Haar Cascade to automatically find faces in the frames.
 
-    \item \textbf{Face Cropping:} Detected faces are cropped with 20\% padding to preserve contextual information surrounding facial features, which may contain important artifacts for detection.
+    \item \textbf{Cropping:} Authors cropped the detected faces with a 20\% margin. This included the immediate boundary of the face, where blending artifacts often show up.
 
-    \item \textbf{Image Resizing:} All cropped face images are standardized to 224$\times$224 pixels, matching the input requirements of our selected architectures.
+    \item \textbf{Resizing:} Images were resized to 224$\times$224 pixels.
 
-    \item \textbf{Pixel Normalization:} Image pixel values are normalized to the [0, 1] range to facilitate stable training dynamics and ensure compatibility across different architectures.
+    \item \textbf{Normalization:} Pixel intensities were scaled to the [0, 1] range.
 \end{enumerate}
+
+\begin{figure*}[!b]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_celebd_confusion_matrix.png} &
+\includegraphics[width=0.24\textwidth]{figures/xception_celebd_confusion_matrix.png} \\
+(a) EfficientNet-B0 & (b) XceptionNet \\
+\includegraphics[width=0.24\textwidth]{figures/resnet50_celebd_confusion_matrix.png} &
+\includegraphics[width=0.24\textwidth]{figures/vit_celebd_confusion_matrix.png} \\
+(c) ResNet50 & (d) Vision Transformer
+\end{tabular}
+\caption{Confusion matrices for all four models on Celeb-DF test set.}
+\label{fig:confusion_celebd}
+\end{figure*}
 
 \subsection{Model Architectures}
 
 \subsubsection{EfficientNet-B0}
-EfficientNet-B0 implements a compound scaling strategy that simultaneously adjusts network depth, width, and input resolution. This approach enables efficient resource utilization while maintaining representational capacity. With 4.6 million trainable parameters, this architecture offers an attractive balance between performance and computational requirements, making it suitable for deployment scenarios with resource constraints.
+This model uses a compound scaling method to improve depth, width, and resolution at the same time. With about 4.6 million parameters, it is the lightest model authors tested, which makes it suitable for situations with limited computing power.
 
 \subsubsection{XceptionNet}
-XceptionNet leverages depthwise separable convolutions to decompose standard convolution operations, significantly reducing computational complexity while preserving feature extraction capabilities. The architecture contains 38.9 million parameters, providing substantial model capacity for learning complex discriminative patterns. Its deeper structure enables hierarchical feature learning across multiple abstraction levels.
+XceptionNet replaces standard convolutions with depthwise separable convolutions. This change makes the model more efficient while keeping strong feature extraction abilities. It has around 38.9 million parameters and is commonly used as a baseline in deepfake research.
 
 \subsubsection{ResNet50}
-ResNet50 incorporates residual connections that facilitate gradient flow through deep networks, enabling effective training of architectures with substantial depth. The model contains approximately 25 million parameters, positioning it between EfficientNet-B0 and XceptionNet in terms of model complexity. Residual connections allow the network to learn identity mappings when necessary, preventing degradation issues common in very deep networks.
+ResNet50 uses skip connections, also known as residuals. These connections help gradients flow more easily during backpropagation. The structure has about 25 million parameters and addresses the degradation issue in deeper networks.
 
 \subsubsection{Vision Transformer (ViT)}
-The Vision Transformer represents a paradigm shift from convolutional processing to sequence-based modeling. An input image $\mathbf{x} \in \mathbb{R}^{H \times W \times C}$ is divided into $N$ non-overlapping patches of size $P \times P$, resulting in $N = HW/P^2$ patches. Each patch is flattened and linearly projected to dimension $D$:
+Unlike CNNs, ViT treats an image as a sequence of patches. An image $\mathbf{x} \in \mathbb{R}^{H \times W \times C}$ is split into $N$ patches of size $P \times P$. These are flattened and projected:
 \begin{equation}
 \mathbf{z}_0 = [\mathbf{x}_{\text{class}}; \mathbf{x}_p^1\mathbf{E}; \mathbf{x}_p^2\mathbf{E}; \ldots; \mathbf{x}_p^N\mathbf{E}] + \mathbf{E}_{\text{pos}}
 \label{eq:vit_patches}
 \end{equation}
-where $\mathbf{x}_{\text{class}}$ is a learnable classification token, $\mathbf{x}_p^i$ is the $i$-th patch, $\mathbf{E} \in \mathbb{R}^{(P^2 \cdot C) \times D}$ is the patch embedding matrix, and $\mathbf{E}_{\text{pos}} \in \mathbb{R}^{(N+1) \times D}$ is the positional embedding.
-
-The sequence is processed through $L$ transformer encoder layers, each consisting of multi-head self-attention (MSA) and multi-layer perceptron (MLP) blocks:
+Here, $\mathbf{x}_{\text{class}}$ is the classification token, $\mathbf{E}$ is the patch embedding matrix, and $\mathbf{E}_{\text{pos}}$ is the positional embedding. The data flows through transformer encoders containing Multi-Head Self-Attention (MSA) and Multi-Layer Perceptron (MLP) blocks:
 \begin{align}
 \mathbf{z}'_l &= \text{MSA}(\text{LN}(\mathbf{z}_{l-1})) + \mathbf{z}_{l-1} \\
 \mathbf{z}_l &= \text{MLP}(\text{LN}(\mathbf{z}'_l)) + \mathbf{z}'_l
 \label{eq:vit_encoder}
 \end{align}
-where LN denotes layer normalization. The multi-head self-attention mechanism enables global attention across all patches:
+where LN denotes layer normalization. The attention mechanism allows the model to relate distant parts of the image globally:
 \begin{equation}
 \text{MSA}(\mathbf{z}) = [\text{head}_1; \text{head}_2; \ldots; \text{head}_h]\mathbf{W}^O
 \label{eq:vit_msa}
 \end{equation}
-where each head computes attention as in Equation~\eqref{eq:attention}. With approximately 86 million parameters, ViT represents the largest model in our comparison, offering substantial capacity for learning complex visual patterns through self-attention mechanisms.
+where each head computes attention as in Equation~\eqref{eq:attention}, and $\mathbf{W}^O$ is the output projection matrix.
+With roughly 86 million parameters, ViT is the heaviest model but offers a completely different approach to feature analysis.
+
+\begin{figure*}[!b]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_celebd_roc_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/xception_celebd_roc_curve.png} \\
+(a) EfficientNet-B0 & (b) XceptionNet \\
+\includegraphics[width=0.24\textwidth]{figures/resnet50_celebd_roc_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/vit_celebd_roc_curve.png} \\
+(c) ResNet50 & (d) Vision Transformer
+\end{tabular}
+\caption{ROC curves for all four models on Celeb-DF test set.}
+\label{fig:roc_celebd}
+\end{figure*}
 
 \subsection{Training Configuration}
-We configure training hyperparameters based on architecture-specific considerations and empirical observations:
+The training setup was standardized as follows:
 
 \subsubsection{Loss Function}
-For binary classification, we employ cross-entropy loss, defined as:
+Authors used Binary Cross-Entropy loss:
 \begin{equation}
 \mathcal{L}_{CE} = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \log(\hat{y}_i) + (1-y_i)\log(1-\hat{y}_i)\right]
 \label{eq:cross_entropy}
 \end{equation}
-where $N$ is the number of samples, $y_i \in \{0,1\}$ represents the true label for sample $i$, and $\hat{y}_i \in [0,1]$ denotes the predicted probability of the positive class.
+where $y_i \in \{0,1\}$ is the ground truth label and $\hat{y}_i \in [0,1]$ is the predicted probability for sample $i$.
 
 \subsubsection{Optimization}
-We employ AdamW optimizer for ResNet50 and standard Adam optimizer for the remaining architectures. The Adam optimizer updates parameters using adaptive learning rates based on estimates of first and second moments of gradients:
+ResNet50 utilized the AdamW optimizer, while the others used standard Adam. The Adam update rule is:
 \begin{align}
 m_t &= \beta_1 m_{t-1} + (1-\beta_1) g_t \\
 v_t &= \beta_2 v_{t-1} + (1-\beta_2) g_t^2 \\
@@ -150,7 +177,7 @@ v_t &= \beta_2 v_{t-1} + (1-\beta_2) g_t^2 \\
 \theta_{t+1} &= \theta_t - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon}\hat{m}_t
 \label{eq:adam}
 \end{align}
-where $g_t$ is the gradient at time step $t$, $\beta_1=0.9$ and $\beta_2=0.999$ are momentum decay rates, $\eta$ is the learning rate, and $\epsilon=10^{-8}$ is a small constant for numerical stability. AdamW extends Adam by decoupling weight decay:
+where $g_t$ is the gradient at time step $t$, $\beta_1$ and $\beta_2$ are momentum decay rates (typically 0.9 and 0.999), $\eta$ is the learning rate, and $\epsilon$ is a small constant (typically $10^{-8}$) to prevent division by zero. AdamW adds decoupled weight decay for better regularization:
 \begin{equation}
 \theta_{t+1} = \theta_t - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon}\hat{m}_t - \lambda \eta \theta_t
 \label{eq:adamw}
@@ -158,12 +185,12 @@ where $g_t$ is the gradient at time step $t$, $\beta_1=0.9$ and $\beta_2=0.999$ 
 where $\lambda$ is the weight decay coefficient.
 
 \subsubsection{Learning Rate Scheduling}
-EfficientNet, Xception, and ViT employ cosine annealing schedules:
+Authors used Cosine Annealing for EfficientNet, Xception, and ViT:
 \begin{equation}
 \eta_t = \eta_{\min} + (\eta_{\max} - \eta_{\min}) \cdot \frac{1 + \cos(\pi t / T)}{2}
 \label{eq:cosine_annealing}
 \end{equation}
-where $\eta_{\max}$ and $\eta_{\min}$ are the maximum and minimum learning rates, $t$ is the current epoch, and $T$ is the total number of epochs. ResNet50 uses a plateau-based scheduler that reduces the learning rate by a factor $\gamma$ when validation performance stagnates:
+where $\eta_t$ is the learning rate at epoch $t$, $\eta_{\min}$ and $\eta_{\max}$ are the minimum and maximum learning rates, and $T$ is the total number of epochs. ResNet50 used a ReduceLROnPlateau scheduler:
 \begin{equation}
 \eta_{t+1} = \begin{cases}
 \gamma \eta_t & \text{if validation metric does not improve} \\
@@ -171,92 +198,127 @@ where $\eta_{\max}$ and $\eta_{\min}$ are the maximum and minimum learning rates
 \end{cases}
 \label{eq:plateau}
 \end{equation}
+where $\gamma$ is the reduction factor (typically 0.1 or 0.5).
+
+\begin{figure*}[!b]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_celebd_precision_recall_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/xception_celebd_precision_recall_curve.png} \\
+(a) EfficientNet-B0 & (b) XceptionNet \\
+\includegraphics[width=0.24\textwidth]{figures/resnet50_celebd_precision_recall_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/vit_celebd_precision_recall_curve.png} \\
+(c) ResNet50 & (d) Vision Transformer
+\end{tabular}
+\caption{Precision-Recall curves for all four models on Celeb-DF test set.}
+\label{fig:pr_celebd}
+\end{figure*}
 
 \subsubsection{Training Hyperparameters}
 \begin{itemize}
-    \item \textbf{Learning Rate:} Initial learning rates are set to 1$\times$10$^{-4}$ for EfficientNet, Xception, and ViT, while ResNet50 uses 5$\times$10$^{-5}$.
-
-    \item \textbf{Batch Processing:} All models are trained with a batch size of 32, balancing memory constraints with gradient estimation quality.
-
-    \item \textbf{Regularization:} Early stopping mechanisms with patience values between 10-20 epochs prevent overfitting and reduce unnecessary computation.
-
-    \item \textbf{Computational Optimization:} Mixed precision training is enabled to accelerate training while maintaining numerical stability.
+    \item \textbf{Learning Rate:} 1$\times$10$^{-4}$ (EfficientNet, Xception, ViT); 5$\times$10$^{-5}$ (ResNet50).
+    \item \textbf{Batch Size:} 32.
+    \item \textbf{Regularization:} Early stopping (patience 10-20 epochs).
+    \item \textbf{Precision:} Mixed precision was used to speed up training.
 \end{itemize}
 
 \subsection{Evaluation Metrics}
-Our evaluation framework employs multiple metrics to comprehensively assess model performance. Given a set of $N$ test samples with true labels $\mathbf{y} = \{y_1, y_2, \ldots, y_N\}$ and predicted labels $\hat{\mathbf{y}} = \{\hat{y}_1, \hat{y}_2, \ldots, \hat{y}_N\}$, where $y_i, \hat{y}_i \in \{0,1\}$, we define:
+To measure performance, authors tracked several metrics. Let $TP, TN, FP, FN$ stand for True Positives, True Negatives, False Positives, and False Negatives.
 
 \subsubsection{Classification Metrics}
-\textbf{Accuracy} measures the proportion of correctly classified samples:
+\textbf{Accuracy} is the overall correctness:
 \begin{equation}
 \text{Accuracy} = \frac{1}{N}\sum_{i=1}^{N}\mathbb{I}(y_i = \hat{y}_i) = \frac{TP + TN}{TP + TN + FP + FN}
 \label{eq:accuracy}
 \end{equation}
-where $TP$, $TN$, $FP$, and $FN$ denote true positives, true negatives, false positives, and false negatives, respectively, and $\mathbb{I}(\cdot)$ is the indicator function.
 
-\textbf{Precision} measures the reliability of positive predictions:
+\textbf{Precision} indicates the quality of positive predictions:
 \begin{equation}
 \text{Precision} = \frac{TP}{TP + FP}
 \label{eq:precision}
 \end{equation}
 
-\textbf{Recall} (also called Sensitivity) measures the ability to find all positive instances:
+\textbf{Recall} indicates the quantity of positives found:
 \begin{equation}
 \text{Recall} = \frac{TP}{TP + FN}
 \label{eq:recall}
 \end{equation}
 
-\textbf{F1-Score} is the harmonic mean of precision and recall:
+\textbf{F1-Score} balances precision and recall:
 \begin{equation}
 \text{F1-Score} = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2TP}{2TP + FP + FN}
 \label{eq:f1}
 \end{equation}
 
-\subsubsection{Probabilistic Metrics}
-For models that output probability scores $\mathbf{p} = \{p_1, p_2, \ldots, p_N\}$ where $p_i \in [0,1]$ represents the predicted probability of the positive class, we compute:
+\begin{figure*}[!b]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_faceforensics_confusion_matrix.png} &
+\includegraphics[width=0.24\textwidth]{figures/xception_faceforensics_confusion_matrix.png} \\
+(a) EfficientNet-B0 & (b) XceptionNet \\
+\includegraphics[width=0.24\textwidth]{figures/resnet50_faceforensics_confusion_matrix.png} &
+\includegraphics[width=0.24\textwidth]{figures/vit_faceforensics_confusion_matrix.png} \\
+(c) ResNet50 & (d) Vision Transformer
+\end{tabular}
+\caption{Confusion matrices for cross-dataset evaluation (Celeb-DF trained models tested on FaceForensics++).}
+\label{fig:confusion_ff}
+\end{figure*}
 
-\textbf{Area Under ROC Curve (AUC-ROC)} measures the model's ability to distinguish between classes across different threshold settings. The ROC curve plots the true positive rate (TPR) against the false positive rate (FPR) as the classification threshold varies:
+\subsubsection{Probabilistic Metrics}
+\textbf{AUC-ROC} evaluates the model across all thresholds. It relies on True Positive Rate (TPR) and False Positive Rate (FPR):
 \begin{align}
 \text{TPR}(\tau) &= \frac{|\{i: p_i \geq \tau \text{ and } y_i = 1\}|}{|\{i: y_i = 1\}|} \\
 \text{FPR}(\tau) &= \frac{|\{i: p_i \geq \tau \text{ and } y_i = 0\}|}{|\{i: y_i = 0\}|}
 \label{eq:roc}
 \end{align}
-where $\tau \in [0,1]$ is the classification threshold. The AUC-ROC is computed as:
+where $\tau$ is the classification threshold, $p_i$ is the predicted probability for sample $i$, and $y_i$ is the true label. The Area Under the Curve is:
 \begin{equation}
 \text{AUC-ROC} = \int_{0}^{1} \text{TPR}(\text{FPR}^{-1}(u)) \, du
 \label{eq:auc_roc}
 \end{equation}
-which can be approximated using the trapezoidal rule or calculated using the Mann-Whitney U statistic.
+which measures the model's ability to distinguish between classes across all possible threshold values.
 
 \subsection{Explainability}
-To understand model decision-making processes, we implement Gradient-weighted Class Activation Mapping (Grad-CAM). This technique generates visual heatmaps indicating which image regions contribute most significantly to the model's classification decision.
+Authors employed Grad-CAM to ensure the models weren't cheating by looking at backgrounds.
 
 \subsubsection{Grad-CAM Formulation}
-For a convolutional neural network, let $A^k \in \mathbb{R}^{H \times W}$ denote the activation map of the $k$-th feature map in the target convolutional layer, where $H$ and $W$ are the spatial dimensions. The importance weight $\alpha_k^c$ for class $c$ is computed as:
+For CNNs, authors calculate the importance $\alpha_k^c$ of feature map $A^k$ for class $c$:
 \begin{equation}
 \alpha_k^c = \frac{1}{HW}\sum_{i=1}^{H}\sum_{j=1}^{W}\frac{\partial y^c}{\partial A_{ij}^k}
 \label{eq:gradcam_alpha}
 \end{equation}
-where $y^c$ is the score for class $c$ before the softmax layer. The Grad-CAM localization map $L_{\text{Grad-CAM}}^c$ is then obtained as a weighted combination of activation maps:
+where $H$ and $W$ are the spatial dimensions of the feature map, and $y^c$ is the score for class $c$ before the softmax layer. The heatmap is a weighted sum of activation maps:
 \begin{equation}
 L_{\text{Grad-CAM}}^c = \text{ReLU}\left(\sum_{k} \alpha_k^c A^k\right)
 \label{eq:gradcam_map}
 \end{equation}
-where ReLU is applied to retain only features that have a positive influence on the class of interest. The resulting heatmap is upsampled to match the input image dimensions and overlaid to visualize regions of importance.
+where ReLU is applied to retain only features that positively influence the class prediction.
 
-For Vision Transformers, we adapt the attention mechanism to produce Grad-CAM-like visualizations by computing attention weights from the self-attention layers:
+For ViTs, authors visualize the attention weights from the self-attention mechanism:
 \begin{equation}
 \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
 \label{eq:attention}
 \end{equation}
-where $Q$, $K$, and $V$ are query, key, and value matrices, and $d_k$ is the dimension of the key vectors. The attention weights are aggregated across layers and heads to generate attention maps that highlight important image regions.
+where $Q$, $K$, and $V$ are query, key, and value matrices, and $d_k$ is the dimension of the key vectors.
 
-By examining these visualizations, we gain insights into whether models learn meaningful features or rely on spurious correlations, enhancing our understanding of model behavior and potential failure modes.
+\begin{figure*}[!b]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_faceforensics_roc_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/xception_faceforensics_roc_curve.png} \\
+(a) EfficientNet-B0 & (b) XceptionNet \\
+\includegraphics[width=0.24\textwidth]{figures/resnet50_faceforensics_roc_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/vit_faceforensics_roc_curve.png} \\
+(c) ResNet50 & (d) Vision Transformer
+\end{tabular}
+\caption{ROC curves for cross-dataset evaluation (Celeb-DF trained models tested on FaceForensics++).}
+\label{fig:roc_ff}
+\end{figure*}
 
 \section{Result Analysis}
 
 \subsection{In-Distribution Performance}
-Table~\ref{tab:celebd_results} summarizes the performance metrics for all four models evaluated on the Celeb-DF test set. EfficientNet-B0 achieves 98.70\% accuracy, closely followed by XceptionNet at 98.76\%. ResNet50 demonstrates 98.22\% accuracy, while Vision Transformer achieves 90.54\% accuracy on the same test set.
+Table~\ref{tab:celebd_results} shows the results from testing on Celeb-DF. The CNN models did very well. EfficientNet-B0 and XceptionNet topped the list with around 98.7\% accuracy, while ResNet50 was not far behind at 98.22\%. The Vision Transformer performed slightly worse in this setting, achieving a score of 90.54\%. Looking at the detailed metrics, EfficientNet-B0 achieved the highest AUC-ROC of 99.54\%, indicating excellent separation between real and fake classes across all threshold settings. XceptionNet showed perfect balance with identical precision, recall, and F1-scores of 98.76\%, suggesting consistent performance across both classes. ResNet50's metrics were closely aligned, with accuracy, precision, and recall all hovering around 98.2\%, demonstrating stable classification behavior. Interestingly, the Vision Transformer's AUC-ROC of 50.35\% is notably low, which suggests the model struggled with threshold selection, though its accuracy of 90.54\% indicates it still learned meaningful patterns.
 
 \begin{table}[htbp]
 \caption{Performance Comparison on Celeb-DF Test Set}
@@ -276,10 +338,24 @@ Vision Transformer & 90.54\% & 50.35\% & 81.98\% & 90.54\% & 86.05\% \\
 }
 \end{table}
 
-The convolutional architectures (EfficientNet-B0, XceptionNet, ResNet50) demonstrate exceptional performance on in-distribution evaluation, with all three models exceeding 98\% accuracy. These results suggest that CNN-based approaches excel at learning dataset-specific patterns when sufficient training data is available. The Vision Transformer, while achieving lower absolute accuracy, exhibits distinct characteristics that become apparent during cross-dataset evaluation, as discussed in the following section.
+The high scores for the CNNs suggest that when the training and testing data have similar characteristics, convolutional networks are very effective at learning the needed patterns. The near-perfect performance of all three CNN architectures demonstrates their ability to capture subtle manipulation artifacts when operating within the same data distribution. This strong in-distribution performance establishes a baseline for comparison when evaluating cross-dataset generalization capabilities.
+
+\begin{figure*}[!b]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_faceforensics_precision_recall_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/xception_faceforensics_precision_recall_curve.png} \\
+(a) EfficientNet-B0 & (b) XceptionNet \\
+\includegraphics[width=0.24\textwidth]{figures/resnet50_faceforensics_precision_recall_curve.png} &
+\includegraphics[width=0.24\textwidth]{figures/vit_faceforensics_precision_recall_curve.png} \\
+(c) ResNet50 & (d) Vision Transformer
+\end{tabular}
+\caption{Precision-Recall curves for cross-dataset evaluation (Celeb-DF trained models tested on FaceForensics++).}
+\label{fig:pr_ff}
+\end{figure*}
 
 \subsection{Cross-Dataset Evaluation}
-To assess model robustness and generalization capabilities, we evaluate all models trained exclusively on Celeb-DF using the FaceForensics++ test set. This evaluation protocol tests whether learned features transfer across different data distributions. Table~\ref{tab:cross_dataset} presents the cross-dataset performance results.
+The real challenge came when authors took these models and tested them on FaceForensics++. As shown in Table~\ref{tab:cross_dataset}, each model had difficulties. This cross-dataset evaluation reveals a critical limitation: models trained on one dataset struggle significantly when faced with deepfakes generated using different techniques or from different sources. The performance degradation highlights the domain gap between Celeb-DF and FaceForensics++, which use different manipulation methods and may have different visual characteristics, compression artifacts, or quality levels.
 
 \begin{table}[htbp]
 \caption{Cross-Dataset Evaluation: Celeb-DF $\rightarrow$ FaceForensics++}
@@ -300,114 +376,9 @@ Vision Transformer & 90.54\% & 66.06\% & -24.48\% & 52.75\% & 52.56\% \\
 }
 \end{table}
 
-These results reveal substantial performance degradation across all evaluated models when tested on a different dataset. EfficientNet-B0 experiences the most severe decline, dropping from 98.70\% to 49.66\% accuracy, effectively performing at chance level. XceptionNet and ResNet50 show similar degradation patterns, with accuracy reductions exceeding 42\%. 
+EfficientNet-B0's accuracy fell to nearly random guessing at 49.66\%, which is particularly concerning given its excellent in-distribution performance. Despite this dramatic accuracy drop, its AUC-ROC of 73.43\% suggests the model still maintains some discriminative ability, though the optimal classification threshold may have shifted significantly. XceptionNet and ResNet50 performed a bit better but still experienced drops of over 42\%, with their AUC values dropping to 68.71\% and 72.98\% respectively. On the other hand, the Vision Transformer displayed an interesting trait; it maintained an accuracy of 66.06\%. While not flawless, its performance drop of 24.48\% was much smaller than that of the CNNs. This indicates that the self-attention mechanism may be learning features that are less dependent on specific dataset artifacts and more applicable to concepts of face manipulation. The ViT's relatively stable performance suggests it captures more generalizable patterns, though its lower AUC-ROC of 52.75\% indicates room for improvement in threshold optimization.
 
-Remarkably, the Vision Transformer demonstrates superior generalization characteristics, maintaining 66.06\% accuracy on FaceForensics++ despite its lower in-distribution performance. This represents a 24.48\% accuracy reduction, substantially smaller than the CNN-based models. This observation suggests that the self-attention mechanisms in transformers may facilitate learning of more generalizable feature representations that transfer better across different data distributions.
-
-\subsection{Visualization Results}
-To provide comprehensive performance analysis, we present confusion matrices, ROC curves, and precision-recall curves for all models. Figure~\ref{fig:confusion_celebd} illustrates the confusion matrices for Celeb-DF test set evaluation, revealing the classification breakdown for each model.
-
-\begin{figure*}[!t]
-\centering
-\begin{tabular}{cc}
-\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_celebd_confusion_matrix.png} &
-\includegraphics[width=0.24\textwidth]{figures/xception_celebd_confusion_matrix.png} \\
-(a) EfficientNet-B0 & (b) XceptionNet \\
-\includegraphics[width=0.24\textwidth]{figures/resnet50_celebd_confusion_matrix.png} &
-\includegraphics[width=0.24\textwidth]{figures/vit_celebd_confusion_matrix.png} \\
-(c) ResNet50 & (d) Vision Transformer
-\end{tabular}
-\caption{Confusion matrices for all four models on Celeb-DF test set.}
-\label{fig:confusion_celebd}
-\end{figure*}
-
-Figure~\ref{fig:roc_celebd} presents the ROC curves, demonstrating the trade-off between true positive rate and false positive rate across different classification thresholds. All CNN-based models achieve AUC values above 98\%, while the Vision Transformer shows lower AUC performance.
-
-\begin{figure*}[!t]
-\centering
-\begin{tabular}{cc}
-\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_celebd_roc_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/xception_celebd_roc_curve.png} \\
-(a) EfficientNet-B0 & (b) XceptionNet \\
-\includegraphics[width=0.24\textwidth]{figures/resnet50_celebd_roc_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/vit_celebd_roc_curve.png} \\
-(c) ResNet50 & (d) Vision Transformer
-\end{tabular}
-\caption{ROC curves for all four models on Celeb-DF test set.}
-\label{fig:roc_celebd}
-\end{figure*}
-
-Figure~\ref{fig:pr_celebd} shows the precision-recall curves, which provide complementary insights to ROC curves, particularly useful for imbalanced datasets. These curves illustrate the relationship between precision and recall at different classification thresholds.
-
-\begin{figure*}[!t]
-\centering
-\begin{tabular}{cc}
-\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_celebd_precision_recall_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/xception_celebd_precision_recall_curve.png} \\
-(a) EfficientNet-B0 & (b) XceptionNet \\
-\includegraphics[width=0.24\textwidth]{figures/resnet50_celebd_precision_recall_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/vit_celebd_precision_recall_curve.png} \\
-(c) ResNet50 & (d) Vision Transformer
-\end{tabular}
-\caption{Precision-Recall curves for all four models on Celeb-DF test set.}
-\label{fig:pr_celebd}
-\end{figure*}
-
-\subsection{Cross-Dataset Visualization}
-Figure~\ref{fig:confusion_ff} shows confusion matrices for cross-dataset evaluation, clearly illustrating the performance degradation when models trained on Celeb-DF are tested on FaceForensics++.
-
-\begin{figure*}[!t]
-\centering
-\begin{tabular}{cc}
-\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_faceforensics_confusion_matrix.png} &
-\includegraphics[width=0.24\textwidth]{figures/xception_faceforensics_confusion_matrix.png} \\
-(a) EfficientNet-B0 & (b) XceptionNet \\
-\includegraphics[width=0.24\textwidth]{figures/resnet50_faceforensics_confusion_matrix.png} &
-\includegraphics[width=0.24\textwidth]{figures/vit_faceforensics_confusion_matrix.png} \\
-(c) ResNet50 & (d) Vision Transformer
-\end{tabular}
-\caption{Confusion matrices for cross-dataset evaluation (Celeb-DF trained models tested on FaceForensics++).}
-\label{fig:confusion_ff}
-\end{figure*}
-
-Figure~\ref{fig:roc_ff} presents ROC curves for cross-dataset evaluation, demonstrating how model discriminative ability degrades when tested on FaceForensics++. The AUC values are substantially lower compared to in-distribution performance, with CNN-based models showing AUC values between 68-73\%, while Vision Transformer achieves 52.75\% AUC.
-
-\begin{figure*}[!t]
-\centering
-\begin{tabular}{cc}
-\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_faceforensics_roc_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/xception_faceforensics_roc_curve.png} \\
-(a) EfficientNet-B0 & (b) XceptionNet \\
-\includegraphics[width=0.24\textwidth]{figures/resnet50_faceforensics_roc_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/vit_faceforensics_roc_curve.png} \\
-(c) ResNet50 & (d) Vision Transformer
-\end{tabular}
-\caption{ROC curves for cross-dataset evaluation (Celeb-DF trained models tested on FaceForensics++).}
-\label{fig:roc_ff}
-\end{figure*}
-
-Figure~\ref{fig:pr_ff} shows precision-recall curves for cross-dataset evaluation, providing additional insights into model performance on the FaceForensics++ dataset. These curves reveal the trade-off between precision and recall when models encounter distribution shifts.
-
-\begin{figure*}[!t]
-\centering
-\begin{tabular}{cc}
-\includegraphics[width=0.24\textwidth]{figures/efficientnet_b0_faceforensics_precision_recall_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/xception_faceforensics_precision_recall_curve.png} \\
-(a) EfficientNet-B0 & (b) XceptionNet \\
-\includegraphics[width=0.24\textwidth]{figures/resnet50_faceforensics_precision_recall_curve.png} &
-\includegraphics[width=0.24\textwidth]{figures/vit_faceforensics_precision_recall_curve.png} \\
-(c) ResNet50 & (d) Vision Transformer
-\end{tabular}
-\caption{Precision-Recall curves for cross-dataset evaluation (Celeb-DF trained models tested on FaceForensics++).}
-\label{fig:pr_ff}
-\end{figure*}
-
-\subsection{Interpretability Analysis}
-Through Grad-CAM visualization analysis, we observe that all four architectures consistently focus their attention on facial regions when making classification decisions. This finding indicates that models learn to identify facial features and manipulation artifacts rather than relying on background information or dataset-specific biases. 
-
-Figure~\ref{fig:gradcam} presents representative Grad-CAM visualizations, showing attention heatmaps overlaid on sample images. The attention patterns exhibit subtle variations across architectures. EfficientNet-B0 and XceptionNet demonstrate more localized, concentrated attention regions, suggesting they identify specific facial features or artifacts. In contrast, ResNet50 and Vision Transformer exhibit more distributed attention patterns, potentially capturing broader contextual information across facial regions.
-
-\begin{figure*}[!t]
+\begin{figure*}[!b]
 \centering
 \begin{tabular}{cc}
 \includegraphics[width=0.18\textwidth]{figures/efficientnet_b0_gradcam_fake.png} &
@@ -423,48 +394,62 @@ Figure~\ref{fig:gradcam} presents representative Grad-CAM visualizations, showin
 \includegraphics[width=0.18\textwidth]{figures/vit_gradcam_real.png} \\
 (g) Vision Transformer: Fake & (h) Vision Transformer: Real
 \end{tabular}
-\caption{Grad-CAM visualizations showing model attention patterns across all four architectures. Red regions indicate high importance for classification decisions.}
+\caption{Grad-CAM visualizations show how the model focuses its attention in all four architectures. Red regions highlight areas that are crucial for classification decisions.}
 \label{fig:gradcam}
 \end{figure*}
 
-These visualizations provide valuable insights into model behavior, confirming that all architectures learn meaningful facial feature representations rather than exploiting irrelevant correlations. The consistent focus on facial regions across different architectures suggests that this represents a fundamental characteristic of effective deepfake detection.
+\subsection{Visualization Results}
+The confusion matrices in Figure~\ref{fig:confusion_celebd} detail the specific errors found in the Celeb-DF set. For the CNN models, the diagonal elements (true positives and true negatives) dominate the matrices, with minimal false positives and false negatives. This indicates that these models make very few classification mistakes when operating on familiar data. The Vision Transformer shows a different pattern, with a higher number of false positives, which aligns with its lower precision score of 81.98\% compared to the CNNs. However, its recall of 90.54\% matches its accuracy, suggesting it correctly identifies most fake samples but occasionally misclassifies real ones as fake.
+
+Figure~\ref{fig:roc_celebd} displays the ROC curves. For the in-distribution test, the CNN curves stay close to the top-left corner. This shows they have high discriminative power. The steep ascent of the CNN curves indicates that these models can achieve high true positive rates with minimal false positive rates, which is ideal for practical applications. EfficientNet-B0 and ResNet50 show particularly impressive curves, nearly reaching the top-left corner, corresponding to their high AUC values above 99\%. XceptionNet's curve is also strong, though slightly less steep, matching its AUC of 98.57\%. The Vision Transformer's ROC curve is notably different, appearing closer to the diagonal, which explains its low AUC-ROC of 50.35\% and suggests the model needs better threshold calibration.
+
+Figure~\ref{fig:pr_celebd} shows the Precision-Recall curves. These curves confirm that the models are stable on the dataset they were trained on. The CNN models maintain high precision even as recall increases, indicating they can identify most fake samples without sacrificing accuracy. The curves remain in the upper-right region of the plot, demonstrating balanced performance across different operating points. This stability is crucial for real-world deployment, where the optimal threshold may need to be adjusted based on the specific application requirements, such as minimizing false positives in high-stakes scenarios or maximizing detection rate in surveillance applications.
+
+\subsection{Cross-Dataset Visualization}
+When shifting to FaceForensics++, the confusion matrices (Figure~\ref{fig:confusion_ff}) show a much higher rate of false positives and false negatives. The matrices show that EfficientNet-B0, despite its strong performance on familiar data, has a hard time with generalizing across different datasets. Errors are spread almost evenly across all categories, which leads to its accuracy dropping to about 50\%. XceptionNet and ResNet50 display similar patterns of decline. They have many off-diagonal elements that point to frequent misclassifications. The Vision Transformer's confusion matrix, though it still shows some mistakes, has better diagonal dominance compared to the CNNs. This visually confirms that it generalizes better.
+
+The ROC curves in Figure~\ref{fig:roc_ff} flatten significantly, showing a loss of discriminative ability. The CNNs, which were once highly effective, now show AUCs between 68\% and 73\%. The curves no longer stick close to the top-left corner; instead, they follow a more gradual diagonal line. This suggests that raising the true positive rate significantly increases the false positive rate. This decline is especially noticeable when compared to the in-distribution ROC curves, where the same models performed almost perfectly. The Vision Transformer's curve, although still not ideal, shows less dramatic change from its in-distribution performance, which aligns with its more stable accuracy across datasets.
+
+Figure~\ref{fig:pr_ff} reinforces this, showing how precision drops rapidly as recall increases. Unlike the in-distribution curves that maintained high precision across recall values, these curves demonstrate a steep trade-off, where attempting to catch more fake samples results in many false alarms. This pattern indicates that the models' learned decision boundaries are no longer well-calibrated for the FaceForensics++ data distribution. The rapid precision decline suggests that the features learned from Celeb-DF are not sufficient to reliably distinguish real from fake content in FaceForensics++, forcing models to make less confident predictions that lead to higher error rates.
+
+\subsection{Interpretability Analysis}
+The Grad-CAM results were encouraging. In Figure~\ref{fig:gradcam}, every model paid attention to the face. This shows that the models are learning facial features and are likely concentrating on blending boundaries or inconsistencies within the face, instead of fixating on background objects. The heatmaps show that all architectures concentrate on important facial areas like the eyes, nose, mouth, and facial contours. These are common spots where manipulation artifacts occur. For fake images, the attention is often concentrated around facial boundaries and blending regions, where the deepfake generation process typically introduces subtle inconsistencies. For real images, the attention patterns are more uniform, suggesting the models recognize natural facial structures.
+
+The patterns varied a bit: EfficientNet and XceptionNet focused on sharp, specific features, while the ResNet and ViT attention maps were more spread out, covering larger areas of the face. EfficientNet-B0's localized attention suggests it identifies specific manipulation artifacts with high precision, which may contribute to its excellent in-distribution performance. XceptionNet displays similar focused patterns. It likely uses its depthwise separable convolutions to identify fine-grained features. ResNet50's wider attention coverage may help it capture the contextual relationships between facial areas, which could make it more robust. The Vision Transformer's spread-out attention pattern shows its global self-attention mechanism. This lets it consider relationships across the whole face at the same time, possibly accounting for its improved generalization across different datasets.
 
 \subsection{Discussion}
-Our experimental findings reveal several important patterns:
+Our experiments highlighted several key trends:
 
 \begin{enumerate}
-    \item \textbf{In-Distribution Superiority of CNNs:} Convolutional architectures demonstrate exceptional performance when evaluated on data from the same distribution as training, with all three CNN models achieving accuracy above 98\%. This suggests that convolutional inductive biases are well-suited for learning dataset-specific patterns in deepfake detection.
+    \item \textbf{CNNs Dominate In-Distribution:} If the training and testing data are similar, CNNs, like EfficientNet and Xception, are the better option. They achieve nearly perfect accuracy.
 
-    \item \textbf{Generalization Limitations:} The substantial performance degradation observed in cross-dataset evaluation indicates that current deepfake detection systems remain vulnerable to distribution shifts. This finding highlights the ongoing challenge of developing truly robust detection systems that generalize across diverse generation methods and data sources.
+    \item \textbf{The Generalization Problem:} The sharp drop in performance on FaceForensics++ shows that current models are fragile. They learn the "fingerprint" of a specific dataset instead of a universal definition of a deepfake.
 
-    \item \textbf{Transformer Generalization Advantage:} Despite achieving lower in-distribution accuracy, the Vision Transformer exhibits superior cross-dataset performance, suggesting that attention-based mechanisms may facilitate learning of more transferable feature representations. This observation warrants further investigation into hybrid architectures combining convolutional and attention-based processing.
+    \item \textbf{Promise of Transformers:} Despite lower initial accuracy, the ViT's ability to withstand the significant performance drops seen in CNNs suggests that attention mechanisms capture more reliable, transferable features.
 
-    \item \textbf{Architecture Trade-offs:} Our results reveal a fundamental trade-off between in-distribution accuracy and cross-dataset generalization. CNN-based models excel at the former, while transformer-based models show promise for the latter. This suggests that practical deployment may require ensemble approaches or domain adaptation techniques.
+    \item \textbf{Balancing Act:} There is currently a trade-off. You can achieve high accuracy on specific data with CNNs or better stability across unknown data with ViT. Closing this gap is the next logical step.
 \end{enumerate}
+
+\textbf{Why Does ViT Generalize Better?} Authors think this comes from basic structural differences. CNNs use local convolutional filters, which can become too specialized to features in the training data, like compression patterns or blending edges. On the other hand, ViT's self-attention mechanism looks at global relationships in the whole image. This helps it learn more abstract representations of facial inconsistencies that apply across different manipulation methods. Also, ViT's patch-based processing might be less affected by the specific spatial frequencies of individual deepfake algorithms. Instead, it captures higher-level semantic irregularities that are shared among various generation techniques.
 
 \section{Conclusion and Future Scope}
-This investigation presents a systematic comparison of four deep learning architectures for deepfake detection, revealing important insights regarding their relative strengths and limitations. Our experimental results demonstrate that while convolutional neural networks achieve superior performance on in-distribution data, Vision Transformers exhibit enhanced generalization capabilities when evaluated across different datasets. The substantial performance degradation observed in cross-dataset evaluation underscores the persistent challenge of developing robust detection systems capable of handling real-world distribution shifts.
-
-Several promising research directions emerge from our findings:
+This paper compared four deep learning architectures. Authors found that Convolutional Neural Networks are very accurate on familiar data, but they struggle with new types of manipulation. In contrast, Vision Transformers demonstrated a greater ability to adapt.
+Moving forward, authors propose several avenues for research:
 
 \begin{enumerate}
-    \item \textbf{Ensemble Approaches:} Combining predictions from multiple models with complementary strengths could potentially improve both accuracy and robustness, leveraging CNN performance on in-distribution data while benefiting from transformer generalization capabilities.
+    \item \textbf{Ensembling:} Combining the precision of CNNs with the strength of ViTs could provide the best of both worlds.
 
-    \item \textbf{Hybrid Architectures:} Developing architectures that integrate convolutional and transformer components may enable models to capture both local spatial patterns and global contextual relationships, potentially achieving superior performance across both in-distribution and cross-dataset scenarios.
+    \item \textbf{Hybrid Models:} Designing frameworks that physically combine convolution layers with transformer blocks helps capture both local textures and global context.
 
-    \item \textbf{Temporal Analysis:} Extending current frame-level detection to video-level analysis using temporal modeling techniques (e.g., LSTM, GRU, or temporal transformers) could exploit temporal inconsistencies that are difficult to detect in individual frames.
+    \item \textbf{Video Analysis:} Moving away from single frames allows us to examine video sequences. Authors can use RNNs or Video Transformers to identify issues like jitter and blinking.
 
-    \item \textbf{Adversarial Robustness:} Investigating adversarial training methodologies and robustness evaluation protocols will be essential for developing detection systems resilient to adversarial manipulation attempts.
-
-    \item \textbf{Multi-Domain Training:} Training models on multiple datasets simultaneously or employing domain adaptation techniques may improve generalization by encouraging learning of domain-invariant features.
-
-    \item \textbf{Deployment Optimization:} Developing model compression, quantization, and optimization techniques will be necessary for real-time deployment in practical applications where computational resources may be limited.
+    \item \textbf{Adversarial Defense:} Testing how these models perform against deepfakes that are specifically created to trick detectors.
 \end{enumerate}
 
-The insights gained from this study contribute to advancing our understanding of deepfake detection and provide guidance for developing more robust and practical detection systems capable of operating effectively in real-world scenarios with diverse data distributions.
+Authors hope these insights help in creating stronger forensic tools that can deal with the changing world of synthetic media.
 
 \section*{Acknowledgment}
-The authors express gratitude to the research teams responsible for creating and maintaining the Celeb-DF and FaceForensics++ datasets, which have been instrumental in advancing deepfake detection research. This work was completed as part of the Image \& Forensics Security course project.
+The authors thank the research teams who created and maintained the Celeb-DF and FaceForensics++ datasets. These datasets have played a key role in improving deepfake detection research.
 
 \begin{thebibliography}{00}
 \bibitem{deepfake_survey} D. Güera and E. J. Delp, ``Deepfake video detection using recurrent neural networks,'' in Proc. 15th IEEE Int. Conf. Advanced Video and Signal Based Surveillance (AVSS), 2018, pp. 1--6.
@@ -482,6 +467,18 @@ The authors express gratitude to the research teams responsible for creating and
 \bibitem{vit} A. Dosovitskiy et al., ``An image is worth 16x16 words: Transformers for image recognition at scale,'' in Proc. Int. Conf. Learning Representations (ICLR), 2021.
 
 \bibitem{cross_dataset} Y. Li, X. Yang, P. Sun, H. Qi, and S. Lyu, ``Celeb-DF: A large-scale challenging dataset for deepfake forensics,'' in Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR), 2020, pp. 3207--3216.
+
+\bibitem{mesonet} D. Afchar, V. Nozick, J. Yamagishi, and I. Echizen, ``MesoNet: a compact facial video forgery detection network,'' in Proc. IEEE Int. Workshop on Information Forensics and Security (WIFS), 2018, pp. 1--7.
+
+\bibitem{faceforensics} A. Rössler, D. Cozzolino, L. Verdoliva, C. Riess, J. Thies, and M. Nießner, ``FaceForensics++: Learning to detect manipulated facial images,'' in Proc. IEEE/CVF Int. Conf. Computer Vision (ICCV), 2019, pp. 1--11.
+
+\bibitem{two_stream} L. Li, J. Bao, T. Zhang, H. Yang, D. Chen, F. Wen, and B. Guo, ``Face X-ray for more general face forgery detection,'' in Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR), 2020, pp. 5001--5010.
+
+\bibitem{capsule_networks} H. H. Nguyen, J. Yamagishi, and I. Echizen, ``Capsule-forensics: Using capsule networks to detect forged images and videos,'' in Proc. IEEE Int. Conf. Acoustics, Speech and Signal Processing (ICASSP), 2019, pp. 2307--2311.
+
+\bibitem{multi_task} Y. Li and S. Lyu, ``Exposing deepfake videos by detecting face warping artifacts,'' in Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition Workshops (CVPRW), 2019, pp. 46--52.
+
+\bibitem{frequency_extended} L. Chai, D. Bau, S.-N. Lim, and A. Bansal, ``What makes fake images detectable? Understanding properties that generalize,'' in Proc. European Conf. Computer Vision (ECCV), 2020, pp. 103--120.
 
 \end{thebibliography}
 
