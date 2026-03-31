@@ -94,7 +94,7 @@ Training was conducted on \textbf{Celeb-DF (v2)}~\cite{cross_dataset} (18,472 im
 
 \begin{figure*}[!htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/architecture_diagrams.png}
+\includegraphics[width=0.95\textwidth]{figure2/architecture_diagrams.png}
 \caption{Architecture diagrams of the four novel detection paradigms. (a) Hybrid CNN-Transformer combining EfficientNet-B0 with 6-layer Transformer encoder. (b) Multi-Scale Feature Fusion aggregating four EfficientNet stages. (c) Ensemble Learning with three aggregation strategies. (d) Frequency-Aware Dual-Branch network processing spatial and FFT features in parallel.}
 \label{fig:architectures}
 \end{figure*}
@@ -284,14 +284,14 @@ XceptionNet        & 96.25 & 55.21 & 55.63 & 55.63 & 56.46 \\
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{figures/adversarial_pgd.png}
+    \includegraphics[width=0.85\textwidth]{figure2/adversarial_pgd.png}
     \caption{Accuracy degradation under PGD attack. EfficientNet-B0, ResNet50, and the Frequency-Aware CNN collapse to 0\%, while ViT is completely invariant and XceptionNet plateaus at $\sim$56\%.}
     \label{fig:adv_pgd}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{figures/adversarial_fgsm.png}
+    \includegraphics[width=0.85\textwidth]{figure2/adversarial_fgsm.png}
     \caption{Accuracy degradation under FGSM attack. The single-step attack reveals differentiated vulnerability: ViT maintains perfect accuracy invariance, while spatial CNNs show varying degrees of fragility.}
     \label{fig:adv_fgsm}
 \end{figure}
@@ -312,8 +312,8 @@ Grad-CAM heatmaps were generated for all 7 models across 20 verification images 
 \begin{figure*}[!htbp]
 \centering
 \begin{tabular}{cc}
-\includegraphics[width=0.45\textwidth]{figures/gradcam_celebd.png} &
-\includegraphics[width=0.45\textwidth]{figures/gradcam_ff.png} \\
+\includegraphics[width=0.45\textwidth]{figure2/gradcam_celebd.png} &
+\includegraphics[width=0.45\textwidth]{figure2/gradcam_ff.png} \\
 (a) Celeb-DF Sample (Fake) & (b) FaceForensics++ Sample (Real)
 \end{tabular}
 \caption{Grad-CAM heatmap comparison grids across all 7 models. CNN-based models show sharp, localized attention on facial boundaries, while spectral models exhibit broader chromatic attention patterns. All models correctly focus on facial features rather than background.}
@@ -323,8 +323,8 @@ Grad-CAM heatmaps were generated for all 7 models across 20 verification images 
 \begin{figure*}[!htbp]
 \centering
 \begin{tabular}{cc}
-\includegraphics[width=0.45\textwidth]{figures/gradcam_celebd_real.png} &
-\includegraphics[width=0.45\textwidth]{figures/gradcam_ff_fake.png} \\
+\includegraphics[width=0.45\textwidth]{figure2/gradcam_celebd_real.png} &
+\includegraphics[width=0.45\textwidth]{figure2/gradcam_ff_fake.png} \\
 (a) Celeb-DF Sample (Real) & (b) FaceForensics++ Sample (Fake --- evaded 6/7 models)
 \end{tabular}
 \caption{Failure analysis. (a) On in-distribution real images, all CNN models agree unanimously while ViT misclassifies with high confidence. (b) A representative FF++ fake image that successfully evaded 6 out of 7 models---only ViT detected it correctly, validating ViT's superior cross-dataset generalization.}
@@ -341,18 +341,18 @@ The systematic failure analysis uncovered critical patterns:
 \section{Discussion}
 The experimental results reveal several critical insights:
 \begin{enumerate}
-    \item \textbf{The Accuracy-Robustness Tradeoff:} Models optimized for maximum in-distribution accuracy (EfficientNet, Frequency-Aware CNN) are operationally fragile. A deployed detector must prioritize robustness over benchmark scores.
+    \item \textbf{The Accuracy-Robustness Tradeoff:} EfficientNet and Frequency-Aware CNN, two models optimized for maximum in-distribution accuracy, are operationally brittle. Robustness must take precedence over benchmark scores in a deployed detector.
     \item \textbf{Ensemble Limits:} While ensembling pushed in-distribution performance to 99.51\%, it provided negligible cross-dataset improvement ($<$3\% over single models). Diversity in ensemble members does not compensate for shared inductive biases rooted in spatial feature extraction.
-    \item \textbf{Spectral Features Are Distribution-Specific:} The Frequency-Aware CNN's spectral signatures proved specific to Celeb-DF's generation pipeline rather than universally applicable GAN fingerprints.
-    \item \textbf{Architectural Topology Dictates Adversarial Fate:} The three-tier adversarial response pattern (collapse, resilience, immunity) maps directly to architectural primitives: standard convolutions are maximally vulnerable, depthwise separable convolutions provide structural resistance, and self-attention provides immunity. This suggests adversarial robustness is an emergent architectural property, not a training artifact.
-    \item \textbf{ViT's Dual Nature:} The ViT simultaneously exhibits the lowest in-distribution accuracy (90.54\%) yet the highest cross-dataset accuracy (66.06\%) and complete adversarial prediction invariance. However, its near-random AUC (49.26\%) and systematic misclassification of all real images as fake indicate this invariance likely stems from gradient masking rather than true semantic robustness. Future work should verify this via gradient-free attacks (e.g., SPSA) or black-box transfer attacks to disentangle architectural robustness from degenerate classification behavior.
+    \item \textbf{Spectral Features Are Distribution-Specific:} Rather than being broadly applicable GAN fingerprints, the spectral signatures of the Frequency-Aware CNN turned out to be unique to Celeb-DF's generation pipeline.
+    \item \textbf{Architectural Topology Dictates Adversarial Fate:} Architectural primitives directly correspond to the three-tier adversarial response pattern (collapse, resilience, and immunity): self-attention offers immunity, depthwise separable convolutions offer structural resistance, and standard convolutions are maximally vulnerable. This implies that adversarial robustness is not a training artifact but rather an emergent architectural feature.
+    \item \textbf{ViT's Dual Nature:} The ViT shows the lowest in-distribution accuracy at 90.54\%, but it has the highest cross-dataset accuracy at 66.06\% and complete adversarial prediction invariance. However, its nearly random AUC of 49.26\% and its consistent misclassification of all real images as fake suggest that this invariance probably comes from gradient masking rather than genuine semantic strength. Future research should confirm this by using gradient-free attacks, such as SPSA, or black-box transfer attacks to separate architectural robustness from poor classification behavior.
 \end{enumerate}
 
 \section{Conclusion}
-This study demonstrates that conventional deepfake detection benchmarking is fundamentally misleading. While the Frequency-Aware CNN (99.84\% AUC) and Soft-Voting Ensemble (99.51\% accuracy) establish new in-distribution bounds, these gains do not transfer: all CNN-based architectures collapse under adversarial perturbations and fail to generalize across datasets. For real-world forensic deployment, it is recommended to use architectures built around ViT and XceptionNet cores, prioritizing operational robustness over peak benchmark accuracy. Future work should investigate adversarial training to elevate the robustness floor, temporal detection via Video Transformers, and universal spectral signatures applicable across generation methods.
+This study shows that traditional deepfake detection tests can be misleading. The Frequency-Aware CNN (99.84\% AUC) and Soft-Voting Ensemble (99.51\% accuracy) set new limits for in-distribution data, but these improvements do not transfer. All CNN-based models fail underc  adversarial attacks and do not generalize well across different datasets. For practical forensic use, it is better to choose models based on ViT and XceptionNet, focusing on reliability rather than just peak benchmark accuracy. Future research should explore adversarial training to improve baseline robustness, temporal detection using Video Transformers, and universal spectral signatures that apply to various generation methods.
 
 \section*{Acknowledgment}
-The authors thank the research teams who created and maintained the Celeb-DF and FaceForensics++ datasets for enabling reproducible deepfake detection research.
+The authors thank the research teams that created and maintained the Celeb-DF and FaceForensics++ datasets. Their work makes reproducible deepfake detection research possible.
 
 \begin{thebibliography}{00}
 \bibitem{cross_dataset} Y. Li, X. Yang, P. Sun, H. Qi, and S. Lyu, ``Celeb-DF: A large-scale challenging dataset for deepfake forensics,'' in Proc. IEEE/CVF CVPR, 2020, pp. 3207--3216.

@@ -1,5 +1,8 @@
 # Deepfake Detection Project - .gitignore
 
+# Context file (local-only, not for GitHub)
+CONTEXT.md
+
 ####################
 # Environment / OS
 ####################
