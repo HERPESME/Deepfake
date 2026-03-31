@@ -303,7 +303,7 @@ draw_ensemble(axes[1, 0])
 draw_frequency(axes[1, 1])
 
 plt.subplots_adjust(wspace=0.15, hspace=0.20, top=0.97, bottom=0.02, left=0.02, right=0.98)
-plt.savefig('SpringConference_Package/figure2/architecture_diagrams.png', dpi=300, bbox_inches='tight',
+plt.savefig('papers/bridging_the_gap/figures/architecture_diagrams.png', dpi=300, bbox_inches='tight',
             facecolor='white', edgecolor='none')
 plt.close()
 print("Architecture diagrams generated successfully!")

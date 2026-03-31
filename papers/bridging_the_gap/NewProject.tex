@@ -94,7 +94,7 @@ Training was conducted on \textbf{Celeb-DF (v2)}~\cite{cross_dataset} (18,472 im
 
 \begin{figure*}[!htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{figure2/architecture_diagrams.png}
+\includegraphics[width=0.95\textwidth]{figures/architecture_diagrams.png}
 \caption{Architecture diagrams of the four novel detection paradigms. (a) Hybrid CNN-Transformer combining EfficientNet-B0 with 6-layer Transformer encoder. (b) Multi-Scale Feature Fusion aggregating four EfficientNet stages. (c) Ensemble Learning with three aggregation strategies. (d) Frequency-Aware Dual-Branch network processing spatial and FFT features in parallel.}
 \label{fig:architectures}
 \end{figure*}
@@ -284,14 +284,14 @@ XceptionNet        & 96.25 & 55.21 & 55.63 & 55.63 & 56.46 \\
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{figure2/adversarial_pgd.png}
+    \includegraphics[width=0.85\textwidth]{figures/adversarial_pgd.png}
     \caption{Accuracy degradation under PGD attack. EfficientNet-B0, ResNet50, and the Frequency-Aware CNN collapse to 0\%, while ViT is completely invariant and XceptionNet plateaus at $\sim$56\%.}
     \label{fig:adv_pgd}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{figure2/adversarial_fgsm.png}
+    \includegraphics[width=0.85\textwidth]{figures/adversarial_fgsm.png}
     \caption{Accuracy degradation under FGSM attack. The single-step attack reveals differentiated vulnerability: ViT maintains perfect accuracy invariance, while spatial CNNs show varying degrees of fragility.}
     \label{fig:adv_fgsm}
 \end{figure}
@@ -312,8 +312,8 @@ Grad-CAM heatmaps were generated for all 7 models across 20 verification images 
 \begin{figure*}[!htbp]
 \centering
 \begin{tabular}{cc}
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_celebd.png} &
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_ff.png} \\
+\includegraphics[width=0.45\textwidth]{figures/gradcam_celebd.png} &
+\includegraphics[width=0.45\textwidth]{figures/gradcam_ff.png} \\
 (a) Celeb-DF Sample (Fake) & (b) FaceForensics++ Sample (Real)
 \end{tabular}
 \caption{Grad-CAM heatmap comparison grids across all 7 models. CNN-based models show sharp, localized attention on facial boundaries, while spectral models exhibit broader chromatic attention patterns. All models correctly focus on facial features rather than background.}
@@ -323,8 +323,8 @@ Grad-CAM heatmaps were generated for all 7 models across 20 verification images 
 \begin{figure*}[!htbp]
 \centering
 \begin{tabular}{cc}
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_celebd_real.png} &
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_ff_fake.png} \\
+\includegraphics[width=0.45\textwidth]{figures/gradcam_celebd_real.png} &
+\includegraphics[width=0.45\textwidth]{figures/gradcam_ff_fake.png} \\
 (a) Celeb-DF Sample (Real) & (b) FaceForensics++ Sample (Fake --- evaded 6/7 models)
 \end{tabular}
 \caption{Failure analysis. (a) On in-distribution real images, all CNN models agree unanimously while ViT misclassifies with high confidence. (b) A representative FF++ fake image that successfully evaded 6 out of 7 models---only ViT detected it correctly, validating ViT's superior cross-dataset generalization.}

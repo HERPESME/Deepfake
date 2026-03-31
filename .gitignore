@@ -1,17 +1,15 @@
-# Deepfake project .gitignore
-# Keep this file at the repository root. It ignores large datasets, virtual envs,
-# environment files, heavy model weights and common editor/OS files.
+# Deepfake Detection Project - .gitignore
 
 ####################
 # Environment / OS
 ####################
 # Virtual environments
-deepfake_env/
 .venv/
 venv/
 env/
+deepfake_env/
 
-# Environment variable files (do NOT commit secrets)
+# Environment variable files
 .env
 .env.*
 *.env
@@ -22,265 +20,88 @@ env/
 # Editor directories
 .vscode/
 .idea/
-
-####################
-# Python
-####################
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.pytest_cache/
-
-# Jupyter
-.ipynb_checkpoints/
-
-####################
-# Datasets (large) - DO NOT push
-####################
-# Raw large dataset folders (user should download manually)
-data/raw/faceforensics/
-data/raw/celebd/
-data/raw/dfdc/
-data/raw/wilddeepfake/
-
-# Processed large datasets (if you preprocess locally, don't push them)
-data/processed/faceforensics/
-data/processed/celebd/
-data/processed/dfdc/
-data/processed/wilddeepfake/
-
-# Dataset archives or downloads
-data/raw/*.zip
-data/raw/*.tar
-data/raw/*.tar.gz
-
-####################
-# Experiments / models (large binaries)
-####################
-# Avoid committing large model checkpoints; keep training artifacts local
-experiments/**/final_model.pth
-experiments/**/checkpoint_*.pth
-experiments/**/checkpoints/
-**/*.pth
-**/*.pt
-
-####################
-# Logging / outputs / reports (optional)
-####################
-# Keep report PDF/HTML if desired; otherwise uncomment to ignore reports
-# reports/
-logs/
-
-####################
-# Data splits / temporary
-####################
-data/splits/
-
-####################
-# Misc
-####################
-# Large binaries
-*.ckpt
-*.h5
-*.onnx
-*.tflite
-
-# Backup files
+*.swp
+*.swo
 *~
-*.bak
 
-# Allow tracking of everything else (src, configs, notebooks, docs)
-# Deepfake Detection Project - .gitignore
-
+####################
 # Python
+####################
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
-.installed.cfg
 *.egg
-MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
+# Jupyter
+.ipynb_checkpoints/
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
+# Testing
+.pytest_cache/
 htmlcov/
-.tox/
-.nox/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# PEP 582
-__pypackages__/
-
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-deepfake_env/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
+# Type checking
 .mypy_cache/
-.dmypy.json
-dmypy.json
 
-# Pyre type checker
-.pyre/
-
-# PyTorch
-*.pth
-*.pt
-checkpoints/
-models/
-
-# Data directories
+####################
+# Datasets (large - download separately)
+####################
 data/raw/
 data/processed/
 data/splits/
 
+####################
+# Model weights (large binaries)
+####################
+**/*.pth
+**/*.pt
+*.ckpt
+*.h5
+*.onnx
+*.tflite
+*.bin
+*.safetensors
+checkpoints/
+
+####################
 # Experiment outputs
+####################
 experiments/
-reports/
 logs/
+*.log
 
-# Weights & Biases
+# Weights & Biases / TensorBoard
 wandb/
-
-# TensorBoard
 runs/
 tensorboard/
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
-
-# Large files
+####################
+# Large media files
+####################
 *.zip
 *.tar.gz
 *.rar
 *.7z
-
-# Dataset files (too large for git)
 *.mp4
 *.avi
 *.mov
 *.mkv
-*.flv
-*.wmv
 
-# Model weights (too large for git)
-*.bin
-*.safetensors
-
-# Configuration files with sensitive data
-config_local.yaml
-secrets.yaml
-.env.local
-
-# Backup files
+####################
+# Generated / temporary
+####################
+*.tmp
+*.temp
 *.bak
 *.backup
-*_backup.*
+temp/
+tmp/
 
-# Log files
-*.log
-logs/
-
-# Cache directories
-.cache/
-cache/
-__pycache__/
-
-# Test outputs
-test_outputs/
-test_results/
-
-# Documentation builds
-docs/_build/
-docs/build/
-
-# Package files
-*.whl
-*.tar.gz
+# Generated reports (can be re-created from scripts)
+reports/

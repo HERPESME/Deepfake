@@ -52,7 +52,7 @@ ax.set_ylim(-5, 105)
 ax.grid(True, linestyle='--', alpha=0.5)
 ax.legend(fontsize=9, ncol=2, loc='upper right')
 plt.tight_layout()
-plt.savefig('SpringConference_Package/figure2/adversarial_pgd.png', dpi=300, bbox_inches='tight')
+plt.savefig('papers/bridging_the_gap/figures/adversarial_pgd.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 # --- FGSM plot (all 7 models) ---
@@ -68,7 +68,7 @@ ax.set_ylim(-5, 105)
 ax.grid(True, linestyle='--', alpha=0.5)
 ax.legend(fontsize=9, ncol=2, loc='upper right')
 plt.tight_layout()
-plt.savefig('SpringConference_Package/figure2/adversarial_fgsm.png', dpi=300, bbox_inches='tight')
+plt.savefig('papers/bridging_the_gap/figures/adversarial_fgsm.png', dpi=300, bbox_inches='tight')
 plt.close()
 
 print("Both plots generated successfully.")
