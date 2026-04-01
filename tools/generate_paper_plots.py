@@ -38,37 +38,54 @@ markers = {
     "multiscale": "P",
     "frequency_aware": "X",
 }
+# Use different line styles so overlapping lines are distinguishable
+linestyles = {
+    "efficientnet_b0": "-",
+    "xception": "-",
+    "resnet50": "--",
+    "vit": "-",
+    "hybrid": "-.",
+    "multiscale": "--",
+    "frequency_aware": ":",
+}
 
-# --- PGD plot (all 7 models) ---
-fig, ax = plt.subplots(figsize=(9, 5.5))
+# --- PGD plot (all 7 models, improved visibility) ---
+fig, ax = plt.subplots(figsize=(10, 6))
 for m in all_models:
     accs = [adv_data[m]['pgd'][eps]['accuracy'] * 100 for eps in epsilons_str]
-    ax.plot(epsilons, accs, marker=markers[m], label=labels[m], color=colors[m], linewidth=2, markersize=7)
+    ax.plot(epsilons, accs, marker=markers[m], label=labels[m], color=colors[m],
+            linewidth=2.5, markersize=9, linestyle=linestyles[m], markeredgecolor='white',
+            markeredgewidth=0.8, zorder=3)
 
 ax.set_title('Adversarial Robustness under PGD Attack', fontsize=14, fontweight='bold')
 ax.set_xlabel(r'Perturbation Budget $\epsilon$ ($L_\infty$)', fontsize=12)
 ax.set_ylabel('Accuracy (%)', fontsize=12)
 ax.set_ylim(-5, 105)
-ax.grid(True, linestyle='--', alpha=0.5)
-ax.legend(fontsize=9, ncol=2, loc='upper right')
+ax.set_xticks(epsilons)
+ax.grid(True, linestyle='--', alpha=0.4)
+ax.legend(fontsize=9, ncol=2, loc='upper right', framealpha=0.9)
 plt.tight_layout()
 plt.savefig('papers/bridging_the_gap/figures/adversarial_pgd.png', dpi=300, bbox_inches='tight')
 plt.close()
+print("PGD plot generated (7 models, distinct styles)")
 
-# --- FGSM plot (all 7 models) ---
-fig, ax = plt.subplots(figsize=(9, 5.5))
+# --- FGSM plot (all 7 models, matching style) ---
+fig, ax = plt.subplots(figsize=(10, 6))
 for m in all_models:
     accs = [adv_data[m]['fgsm'][eps]['accuracy'] * 100 for eps in epsilons_str]
-    ax.plot(epsilons, accs, marker=markers[m], label=labels[m], color=colors[m], linewidth=2, markersize=7)
+    ax.plot(epsilons, accs, marker=markers[m], label=labels[m], color=colors[m],
+            linewidth=2.5, markersize=9, linestyle=linestyles[m], markeredgecolor='white',
+            markeredgewidth=0.8, zorder=3)
 
 ax.set_title('Adversarial Robustness under FGSM Attack', fontsize=14, fontweight='bold')
 ax.set_xlabel(r'Perturbation Budget $\epsilon$ ($L_\infty$)', fontsize=12)
 ax.set_ylabel('Accuracy (%)', fontsize=12)
 ax.set_ylim(-5, 105)
-ax.grid(True, linestyle='--', alpha=0.5)
-ax.legend(fontsize=9, ncol=2, loc='upper right')
+ax.set_xticks(epsilons)
+ax.grid(True, linestyle='--', alpha=0.4)
+ax.legend(fontsize=9, ncol=2, loc='upper right', framealpha=0.9)
 plt.tight_layout()
 plt.savefig('papers/bridging_the_gap/figures/adversarial_fgsm.png', dpi=300, bbox_inches='tight')
 plt.close()
-
-print("Both plots generated successfully.")
+print("FGSM plot generated (7 models, distinct styles)")
+print("Done!")

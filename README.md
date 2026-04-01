@@ -142,13 +142,18 @@ White-box attacks (FGSM & PGD) at perturbation budgets ε ∈ {0.01, 0.02, 0.05,
 <p align="center">
   <img src="papers/bridging_the_gap/figures/adversarial_pgd.png" width="85%" alt="Adversarial PGD Results"/>
 </p>
-<p align="center"><em>Accuracy under PGD attack — CNNs collapse while ViT maintains complete invariance at 63.54%</em></p>
+<p align="center"><em>Accuracy under PGD attack (10-step iterative) — CNNs collapse while ViT maintains complete invariance at 63.54%</em></p>
 
-| Robustness Tier | Models | PGD (ε=0.05) | Behavior |
-|---|---|:---:|---|
-| 🔴 **Complete Collapse** | EfficientNet, ResNet50, Freq-Aware | **0.00%** | Operationally useless against adversaries |
-| 🟡 **Structural Resilience** | XceptionNet | **55.63%** | Depthwise separable convolutions resist gradient attacks |
-| 🟢 **Complete Invariance** | Vision Transformer | **63.54%** | Self-attention provides gradient masking immunity |
+<p align="center">
+  <img src="papers/bridging_the_gap/figures/adversarial_fgsm.png" width="85%" alt="Adversarial FGSM Results"/>
+</p>
+<p align="center"><em>Accuracy under FGSM attack (single-step) — Weaker attack reveals gradient-based vulnerability spectrum across all 7 models</em></p>
+
+| Robustness Tier | Models | PGD (ε=0.05) | FGSM (ε=0.05) | Behavior |
+|---|---|:---:|:---:|---|
+| 🔴 **Complete Collapse** | EfficientNet, ResNet50, Freq-Aware | **0.00%** | 6–46% | Operationally useless against iterative adversaries |
+| 🟡 **Structural Resilience** | XceptionNet | **55.63%** | **58.54%** | Depthwise separable convolutions resist gradient attacks |
+| 🟢 **Complete Invariance** | Vision Transformer | **63.54%** | **63.54%** | Self-attention provides gradient masking immunity |
 
 > ⚠️ **Key Insight**: The highest-accuracy model (EfficientNet at 98.70%) is the *worst* adversarial choice, while the lowest (ViT at 90.54%) is the *most stable*. This inverts conventional deployment logic.
 
@@ -204,9 +209,10 @@ For detailed setup and training instructions, see:
 1. **7 architectures** benchmarked — 4 baselines + 3 novel designs
 2. **18 ensemble configurations** evaluated (6 combinations × 3 strategies)
 3. **New performance ceiling**: 99.51% accuracy (Soft-Vote), 99.84% AUC (Frequency-Aware)
-4. **First comprehensive adversarial evaluation** in deepfake detection across 7 models at 5 perturbation budgets
-5. **Discovery of ViT's adversarial invariance** — a previously unreported finding
+4. **First comprehensive adversarial evaluation** in deepfake detection — 7 models × 2 attacks (FGSM + PGD) × 5 perturbation budgets
+5. **Discovery of ViT's adversarial invariance** — a previously unreported finding with complete accuracy immunity under both FGSM and PGD
 6. **4.2M parameter model** matching 86.6M ViT in detection accuracy
+7. **Three-tier robustness taxonomy** — collapse (CNN), resilience (XceptionNet), invariance (ViT) — linked to architectural primitives
 
 ---
 

@@ -11,7 +11,7 @@
 \usepackage{multirow}
 \usepackage{float}
 \usepackage{subcaption}
-\usepackage{stfloats}
+\usepackage{stfloats}₹
 \usepackage{placeins}
 \usepackage{enumitem}
 \setlist{nosep}
@@ -79,8 +79,8 @@ This paper systematically addresses the generalization and robustness gap throug
 \section{Contributions}
 This work advances the field through the following contributions:
 \begin{enumerate}
-    \item Recognition and design of three novel architectures---Hybrid CNN-Transformer (30.7M parameters), Multi-Scale Feature Fusion (\textbf{4.2M parameters}), and Frequency-Aware CNN (5.5M parameters)---pushing in-distribution AUC to 99.84\%.
-    \item The most comprehensive ensemble ablation in deepfake detection literature: 6 model combinations $\times$ 3 aggregation strategies, establishing a new performance ceiling of 99.51\% accuracy via Soft-Voting.
+    \item Recognition and design of three novel architectures---Hybrid CNN-Transformer (30.7M parameters), Multi-Scale Feature Fusion (4.2M parameters), and Frequency-Aware CNN (5.5M parameters)---pushing in-distribution AUC to 99.84\%.
+    \item Comprehensive ensemble ablation: 6 model combinations $\times$ 3 aggregation strategies, establishing a new performance ceiling of 99.51\% accuracy via Soft-Voting.
     \item Rigorous adversarial evaluation (FGSM and PGD) across all 7 architectures at 5 perturbation budgets, revealing that Vision Transformers exhibit \textit{complete accuracy invariance} under both attack types.
     \item Comprehensive cross-dataset evaluation on FaceForensics++ and failure analysis via Grad-CAM across all 7 models on 20 verification images, identifying shared blindspots.
 \end{enumerate}
@@ -94,7 +94,7 @@ Training was conducted on \textbf{Celeb-DF (v2)}~\cite{cross_dataset} (18,472 im
 
 \begin{figure*}[!htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{figure2/architecture_diagrams.png}
+\includegraphics[width=0.95\textwidth]{figures/architecture_diagrams.png}
 \caption{Architecture diagrams of the four novel detection paradigms. (a) Hybrid CNN-Transformer combining EfficientNet-B0 with 6-layer Transformer encoder. (b) Multi-Scale Feature Fusion aggregating four EfficientNet stages. (c) Ensemble Learning with three aggregation strategies. (d) Frequency-Aware Dual-Branch network processing spatial and FFT features in parallel.}
 \label{fig:architectures}
 \end{figure*}
@@ -258,7 +258,7 @@ EfficientNet-B0      & 49.66\% & -49.04\% & \textbf{73.43\%} & 45.93\% \\
 Two key patterns emerge. First, the \textbf{Vision Transformer} maintained the smallest accuracy drop (-24.48\%), consistent with its global self-attention mechanism learning manipulation-agnostic features. Second, while EfficientNet-B0 collapsed to near-random accuracy (49.66\%), it paradoxically retained the highest AUC (73.43\%), indicating that its learned representations still contain discriminative signal---but the classification threshold no longer generalizes. The novel architectures (Multi-Scale, Frequency-Aware, Hybrid) achieved intermediate FF++ AUC values (69.47--71.27\%), outperforming XceptionNet (68.71\%) but failing to close the fundamental generalization gap, suggesting that the spectral signatures captured by the Frequency-Aware model are generation-method specific.
 
 \subsection{Adversarial Robustness: The Critical Security Test}
-The adversarial evaluation (FGSM and PGD) yielded the study's most impactful findings. Table~\ref{tab:adversarial} presents accuracy across all models and perturbation budgets under PGD attack, and Figures~\ref{fig:adv_pgd}--\ref{fig:adv_fgsm} visualize the degradation curves.
+The adversarial evaluation (FGSM and PGD) yielded the study's most impactful findings. Table~\ref{tab:adversarial} presents accuracy across all models and perturbation budgets under PGD attack, Table~\ref{tab:adversarial_fgsm} presents the corresponding FGSM results, and Figures~\ref{fig:adv_pgd}--\ref{fig:adv_fgsm} visualize the degradation curves.
 
 \begin{table}[H]
 \caption{Adversarial Accuracy (\%) under PGD Attack ($T{=}10$ steps, $\alpha{=}\epsilon/4$)}
@@ -284,17 +284,41 @@ XceptionNet        & 96.25 & 55.21 & 55.63 & 55.63 & 56.46 \\
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{figure2/adversarial_pgd.png}
-    \caption{Accuracy degradation under PGD attack. EfficientNet-B0, ResNet50, and the Frequency-Aware CNN collapse to 0\%, while ViT is completely invariant and XceptionNet plateaus at $\sim$56\%.}
+    \includegraphics[width=\textwidth]{figures/adversarial_pgd.png}
+    \caption{PGD attack degrades accuracy. ViT is fully invariant, XceptionNet plateaus at $\sim$56\%, and EfficientNet-B0, ResNet50, and the Frequency-Aware CNN collapse to 0\%.}
     \label{fig:adv_pgd}
 \end{figure}
 
+\vspace{-4pt}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{figure2/adversarial_fgsm.png}
-    \caption{Accuracy degradation under FGSM attack. The single-step attack reveals differentiated vulnerability: ViT maintains perfect accuracy invariance, while spatial CNNs show varying degrees of fragility.}
+    \includegraphics[width=\textwidth]{figures/adversarial_fgsm.png}
+    \caption{Deterioration of accuracy under FGSM attack. Differentiated vulnerability is revealed by the single-step attack: spatial CNNs exhibit varying degrees of fragility, whereas ViT maintains perfect accuracy invariance.}
     \label{fig:adv_fgsm}
 \end{figure}
+
+\begin{table}[H]
+\caption{Adversarial Accuracy (\%) under FGSM Attack (single-step, $\alpha{=}\epsilon$)}
+\label{tab:adversarial_fgsm}
+\centering
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & $\epsilon{=}0.0$ & $\epsilon{=}0.01$ & $\epsilon{=}0.02$ & $\epsilon{=}0.05$ & $\epsilon{=}0.10$ \\
+\midrule
+EfficientNet-B0    & 96.88 & 50.83 & 42.71 & 46.46 & 58.75 \\
+ResNet50           & 93.54 & 26.04 & 11.67 & \textbf{6.04} & 13.96 \\
+Multi-Scale Fusion & 98.54 & 43.12 & 29.17 & 21.04 & 41.25 \\
+Freq-Aware CNN     & 96.88 & 50.21 & 42.29 & 45.83 & 56.67 \\
+Hybrid CNN-Trans   & 95.83 & 55.00 & 48.54 & 47.29 & 62.08 \\
+\midrule
+XceptionNet        & 96.25 & 58.33 & 58.13 & 58.54 & 60.21 \\
+\textbf{Vision Transformer} & \textbf{63.54} & \textbf{63.54} & \textbf{63.54} & \textbf{63.54} & \textbf{63.54} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 Three distinct robustness tiers emerge from the data:
 
@@ -312,22 +336,22 @@ Grad-CAM heatmaps were generated for all 7 models across 20 verification images 
 \begin{figure*}[!htbp]
 \centering
 \begin{tabular}{cc}
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_celebd.png} &
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_ff.png} \\
+\includegraphics[width=0.45\textwidth]{figures/gradcam_celebd.png} &
+\includegraphics[width=0.45\textwidth]{figures/gradcam_ff.png} \\
 (a) Celeb-DF Sample (Fake) & (b) FaceForensics++ Sample (Real)
 \end{tabular}
-\caption{Grad-CAM heatmap comparison grids across all 7 models. CNN-based models show sharp, localized attention on facial boundaries, while spectral models exhibit broader chromatic attention patterns. All models correctly focus on facial features rather than background.}
+\caption{Grad-CAM heatmap comparison grids for each of the seven models. While spectral models display more expansive chromatic attention patterns, CNN-based models display precise, localized attention on facial boundaries. Every model appropriately prioritizes facial features over background.}
 \label{fig:gradcam_grids}
 \end{figure*}
 
 \begin{figure*}[!htbp]
 \centering
 \begin{tabular}{cc}
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_celebd_real.png} &
-\includegraphics[width=0.45\textwidth]{figure2/gradcam_ff_fake.png} \\
+\includegraphics[width=0.45\textwidth]{figures/gradcam_celebd_real.png} &
+\includegraphics[width=0.45\textwidth]{figures/gradcam_ff_fake.png} \\
 (a) Celeb-DF Sample (Real) & (b) FaceForensics++ Sample (Fake --- evaded 6/7 models)
 \end{tabular}
-\caption{Failure analysis. (a) On in-distribution real images, all CNN models agree unanimously while ViT misclassifies with high confidence. (b) A representative FF++ fake image that successfully evaded 6 out of 7 models---only ViT detected it correctly, validating ViT's superior cross-dataset generalization.}
+\caption{Failure analysis. (a) While ViT misclassifies with high confidence, all CNN models agree unanimously on in-distribution real images. (b) Only ViT correctly identified a representative FF++ fake image that successfully eluded six out of seven models, confirming ViT's superior cross-dataset generalization.}
 \label{fig:gradcam_failure}
 \end{figure*}
 
