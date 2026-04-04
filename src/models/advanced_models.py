@@ -1,6 +1,13 @@
 """
 Advanced models for deepfake detection.
-Includes CLIP-based detector, contrastive learning models, and hybrid CNN-Transformer.
+
+Active Research Models (Used in Bridging the Gap Paper):
+- Hybrid CNN-Transformer: Combining EfficientNet features with Transformer attention.
+- Multi-Scale Feature Fusion: Aggregating features across multiple semantic granularities.
+
+Experimental Models (Future Work - Not currently in paper):
+- CLIP-based Detector: Leveraging OpenAI's CLIP for semantic visual processing.
+- Contrastive Learning: Self-supervised learning to maximize real/fake feature separation.
 """
 
 import torch
@@ -14,129 +21,14 @@ from einops import rearrange, repeat
 import math
 
 
-class CLIPDeepfakeDetector(nn.Module):
-    """
-    CLIP-based deepfake detector using contrastive learning.
-    Leverages CLIP's powerful visual representations for deepfake detection.
-    """
-    
-    def __init__(self,
-                 model_name: str = "openai/clip-vit-base-patch32",
-                 num_classes: int = 2,
-                 freeze_clip: bool = False,
-                 projection_dim: int = 512):
-        """
-        Initialize CLIP-based detector.
-        
-        Args:
-            model_name: CLIP model name
-            num_classes: Number of output classes
-            freeze_clip: Whether to freeze CLIP weights
-            projection_dim: Dimension of projection layer
-        """
-        super(CLIPDeepfakeDetector, self).__init__()
-        
-        # Load CLIP model
-        self.clip_model = CLIPModel.from_pretrained(model_name)
-        self.clip_processor = CLIPProcessor.from_pretrained(model_name)
-        
-        # Freeze CLIP if requested
-        if freeze_clip:
-            for param in self.clip_model.parameters():
-                param.requires_grad = False
-        
-        # Get CLIP feature dimension
-        clip_dim = self.clip_model.config.vision_config.hidden_size
-        
-        # Projection layers
-        self.visual_projection = nn.Sequential(
-            nn.Linear(clip_dim, projection_dim),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(projection_dim, projection_dim)
-        )
-        
-        # Classification head
-        self.classifier = nn.Sequential(
-            nn.Linear(projection_dim, 256),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(256, num_classes)
-        )
-        
-        # Contrastive learning components
-        self.temperature = nn.Parameter(torch.tensor(0.07))
-        self.contrastive_projection = nn.Linear(projection_dim, 128)
-    
-    def forward(self, images: torch.Tensor, return_features: bool = False) -> torch.Tensor:
-        """
-        Forward pass.
-        
-        Args:
-            images: Input images
-            return_features: Whether to return features
-            
-        Returns:
-            Classification logits or (logits, features)
-        """
-        # Get CLIP visual features
-        visual_features = self.clip_model.get_image_features(images)
-        
-        # Project features
-        projected_features = self.visual_projection(visual_features)
-        
-        # Classification
-        logits = self.classifier(projected_features)
-        
-        if return_features:
-            return logits, projected_features
-        return logits
-    
-    def contrastive_loss(self, features: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        """
-        Compute contrastive loss for self-supervised learning.
-        
-        Args:
-            features: Feature embeddings
-            labels: Ground truth labels
-            
-        Returns:
-            Contrastive loss
-        """
-        # Project to contrastive space
-        contrastive_features = self.contrastive_projection(features)
-        contrastive_features = F.normalize(contrastive_features, dim=1)
-        
-        # Compute similarity matrix
-        similarity_matrix = torch.matmul(contrastive_features, contrastive_features.T)
-        similarity_matrix = similarity_matrix / self.temperature
-        
-        # Create positive/negative masks
-        batch_size = labels.size(0)
-        labels_expanded = labels.unsqueeze(1)
-        positive_mask = (labels_expanded == labels_expanded.T).float()
-        negative_mask = 1 - positive_mask
-        
-        # Remove diagonal (self-similarity)
-        positive_mask.fill_diagonal_(0)
-        
-        # Compute contrastive loss
-        exp_sim = torch.exp(similarity_matrix)
-        positive_sim = exp_sim * positive_mask
-        negative_sim = exp_sim * negative_mask
-        
-        # Avoid division by zero
-        positive_sum = positive_sim.sum(dim=1, keepdim=True)
-        negative_sum = negative_sim.sum(dim=1, keepdim=True)
-        
-        # Contrastive loss
-        loss = -torch.log(positive_sum / (positive_sum + negative_sum + 1e-8))
-        return loss.mean()
-
+# =============================================================================
+# ACTIVE RESEARCH MODELS (Used in Paper Results)
+# =============================================================================
 
 class HybridCNNTransformer(nn.Module):
     """
     Hybrid CNN-Transformer model combining CNN feature extraction with Transformer attention.
+    Used in the "Bridging the Gap" paper to combine local and global reasoning.
     """
     
     def __init__(self,
@@ -277,9 +169,213 @@ class HybridCNNTransformer(nn.Module):
         return transformer_output[:, 0]
 
 
+class MultiScaleFeatureFusion(nn.Module):
+    """
+    Multi-scale feature fusion model for deepfake detection.
+    Combines features from multiple scales and resolutions.
+    Used in the "Bridging the Gap" paper for parameter-efficient artifact detection.
+    """
+    
+    def __init__(self,
+                 backbone: str = "efficientnet_b0",
+                 num_classes: int = 2,
+                 pretrained: bool = True):
+        """
+        Initialize multi-scale fusion model.
+        
+        Args:
+            backbone: Backbone architecture
+            num_classes: Number of output classes
+            pretrained: Whether to use pretrained weights
+        """
+        super(MultiScaleFeatureFusion, self).__init__()
+        
+        # Multi-scale backbone
+        self.backbone = timm.create_model(
+            backbone,
+            pretrained=pretrained,
+            features_only=True,
+            out_indices=[1, 2, 3, 4]  # Multiple scales
+        )
+        
+        # Get feature dimensions
+        with torch.no_grad():
+            dummy_input = torch.randn(1, 3, 224, 224)
+            features = self.backbone(dummy_input)
+            self.feature_dims = [f.shape[1] for f in features]
+        
+        # Feature fusion layers
+        self.fusion_layers = nn.ModuleList()
+        for i, dim in enumerate(self.feature_dims):
+            fusion_layer = nn.Sequential(
+                nn.Conv2d(dim, 256, 1),
+                nn.BatchNorm2d(256),
+                nn.ReLU(inplace=True)
+            )
+            self.fusion_layers.append(fusion_layer)
+        
+        # Global feature aggregation
+        self.global_pool = nn.AdaptiveAvgPool2d(1)
+        
+        # Classification head
+        self.classifier = nn.Sequential(
+            nn.Linear(256 * len(self.feature_dims), 512),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(512, num_classes)
+        )
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass."""
+        # Extract multi-scale features
+        features = self.backbone(x)
+        
+        # Fuse features
+        fused_features = []
+        for i, (feature, fusion_layer) in enumerate(zip(features, self.fusion_layers)):
+            fused_feature = fusion_layer(feature)
+            fused_feature = self.global_pool(fused_feature)
+            fused_feature = fused_feature.flatten(1)
+            fused_features.append(fused_feature)
+        
+        # Concatenate all features
+        combined_features = torch.cat(fused_features, dim=1)
+        
+        # Classification
+        output = self.classifier(combined_features)
+        
+        return output
+
+
+# =============================================================================
+# EXPERIMENTAL MODELS (Not currently in Paper)
+# =============================================================================
+
+class CLIPDeepfakeDetector(nn.Module):
+    """
+    CLIP-based deepfake detector using contrastive learning.
+    Leverages CLIP's powerful visual representations for deepfake detection.
+    (Currently experimental/future work).
+    """
+    
+    def __init__(self,
+                 model_name: str = "openai/clip-vit-base-patch32",
+                 num_classes: int = 2,
+                 freeze_clip: bool = False,
+                 projection_dim: int = 512):
+        """
+        Initialize CLIP-based detector.
+        
+        Args:
+            model_name: CLIP model name
+            num_classes: Number of output classes
+            freeze_clip: Whether to freeze CLIP weights
+            projection_dim: Dimension of projection layer
+        """
+        super(CLIPDeepfakeDetector, self).__init__()
+        
+        # Load CLIP model
+        self.clip_model = CLIPModel.from_pretrained(model_name)
+        self.clip_processor = CLIPProcessor.from_pretrained(model_name)
+        
+        # Freeze CLIP if requested
+        if freeze_clip:
+            for param in self.clip_model.parameters():
+                param.requires_grad = False
+        
+        # Get CLIP feature dimension
+        clip_dim = self.clip_model.config.vision_config.hidden_size
+        
+        # Projection layers
+        self.visual_projection = nn.Sequential(
+            nn.Linear(clip_dim, projection_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(projection_dim, projection_dim)
+        )
+        
+        # Classification head
+        self.classifier = nn.Sequential(
+            nn.Linear(projection_dim, 256),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(256, num_classes)
+        )
+        
+        # Contrastive learning components
+        self.temperature = nn.Parameter(torch.tensor(0.07))
+        self.contrastive_projection = nn.Linear(projection_dim, 128)
+    
+    def forward(self, images: torch.Tensor, return_features: bool = False) -> torch.Tensor:
+        """
+        Forward pass.
+        
+        Args:
+            images: Input images
+            return_features: Whether to return features
+            
+        Returns:
+            Classification logits or (logits, features)
+        """
+        # Get CLIP visual features
+        visual_features = self.clip_model.get_image_features(images)
+        
+        # Project features
+        projected_features = self.visual_projection(visual_features)
+        
+        # Classification
+        logits = self.classifier(projected_features)
+        
+        if return_features:
+            return logits, projected_features
+        return logits
+    
+    def contrastive_loss(self, features: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        """
+        Compute contrastive loss for self-supervised learning.
+        
+        Args:
+            features: Feature embeddings
+            labels: Ground truth labels
+            
+        Returns:
+            Contrastive loss
+        """
+        # Project to contrastive space
+        contrastive_features = self.contrastive_projection(features)
+        contrastive_features = F.normalize(contrastive_features, dim=1)
+        
+        # Compute similarity matrix
+        similarity_matrix = torch.matmul(contrastive_features, contrastive_features.T)
+        similarity_matrix = similarity_matrix / self.temperature
+        
+        # Create positive/negative masks
+        batch_size = labels.size(0)
+        labels_expanded = labels.unsqueeze(1)
+        positive_mask = (labels_expanded == labels_expanded.T).float()
+        negative_mask = 1 - positive_mask
+        
+        # Remove diagonal (self-similarity)
+        positive_mask.fill_diagonal_(0)
+        
+        # Compute contrastive loss
+        exp_sim = torch.exp(similarity_matrix)
+        positive_sim = exp_sim * positive_mask
+        negative_sim = exp_sim * negative_mask
+        
+        # Avoid division by zero
+        positive_sum = positive_sim.sum(dim=1, keepdim=True)
+        negative_sum = negative_sim.sum(dim=1, keepdim=True)
+        
+        # Contrastive loss
+        loss = -torch.log(positive_sum / (positive_sum + negative_sum + 1e-8))
+        return loss.mean()
+
+
 class ContrastiveLearningModel(nn.Module):
     """
     Self-supervised contrastive learning model for deepfake detection.
+    (Currently experimental/future work).
     """
     
     def __init__(self,
@@ -383,82 +479,9 @@ class ContrastiveLearningModel(nn.Module):
         return loss
 
 
-class MultiScaleFeatureFusion(nn.Module):
-    """
-    Multi-scale feature fusion model for deepfake detection.
-    Combines features from multiple scales and resolutions.
-    """
-    
-    def __init__(self,
-                 backbone: str = "efficientnet_b0",
-                 num_classes: int = 2,
-                 pretrained: bool = True):
-        """
-        Initialize multi-scale fusion model.
-        
-        Args:
-            backbone: Backbone architecture
-            num_classes: Number of output classes
-            pretrained: Whether to use pretrained weights
-        """
-        super(MultiScaleFeatureFusion, self).__init__()
-        
-        # Multi-scale backbone
-        self.backbone = timm.create_model(
-            backbone,
-            pretrained=pretrained,
-            features_only=True,
-            out_indices=[1, 2, 3, 4]  # Multiple scales
-        )
-        
-        # Get feature dimensions
-        with torch.no_grad():
-            dummy_input = torch.randn(1, 3, 224, 224)
-            features = self.backbone(dummy_input)
-            self.feature_dims = [f.shape[1] for f in features]
-        
-        # Feature fusion layers
-        self.fusion_layers = nn.ModuleList()
-        for i, dim in enumerate(self.feature_dims):
-            fusion_layer = nn.Sequential(
-                nn.Conv2d(dim, 256, 1),
-                nn.BatchNorm2d(256),
-                nn.ReLU(inplace=True)
-            )
-            self.fusion_layers.append(fusion_layer)
-        
-        # Global feature aggregation
-        self.global_pool = nn.AdaptiveAvgPool2d(1)
-        
-        # Classification head
-        self.classifier = nn.Sequential(
-            nn.Linear(256 * len(self.feature_dims), 512),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(512, num_classes)
-        )
-    
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward pass."""
-        # Extract multi-scale features
-        features = self.backbone(x)
-        
-        # Fuse features
-        fused_features = []
-        for i, (feature, fusion_layer) in enumerate(zip(features, self.fusion_layers)):
-            fused_feature = fusion_layer(feature)
-            fused_feature = self.global_pool(fused_feature)
-            fused_feature = fused_feature.flatten(1)
-            fused_features.append(fused_feature)
-        
-        # Concatenate all features
-        combined_features = torch.cat(fused_features, dim=1)
-        
-        # Classification
-        output = self.classifier(combined_features)
-        
-        return output
-
+# =============================================================================
+# MODEL FACTORY
+# =============================================================================
 
 def create_advanced_model(model_name: str,
                          num_classes: int = 2,
@@ -478,14 +501,14 @@ def create_advanced_model(model_name: str,
     """
     model_name = model_name.lower()
     
-    if model_name == "clip":
-        return CLIPDeepfakeDetector(num_classes=num_classes, **kwargs)
-    elif model_name == "hybrid_cnn_transformer":
+    if model_name == "hybrid_cnn_transformer":
         return HybridCNNTransformer(num_classes=num_classes, pretrained=pretrained, **kwargs)
-    elif model_name == "contrastive":
-        return ContrastiveLearningModel(num_classes=num_classes, pretrained=pretrained, **kwargs)
     elif model_name == "multiscale":
         return MultiScaleFeatureFusion(num_classes=num_classes, pretrained=pretrained, **kwargs)
+    elif model_name == "clip":
+        return CLIPDeepfakeDetector(num_classes=num_classes, **kwargs)
+    elif model_name == "contrastive":
+        return ContrastiveLearningModel(num_classes=num_classes, pretrained=pretrained, **kwargs)
     elif model_name == "frequency_aware":
         from src.models.frequency_models import FrequencyAwareCNN
         return FrequencyAwareCNN(num_classes=num_classes, pretrained=pretrained, **kwargs)

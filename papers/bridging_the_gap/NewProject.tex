@@ -178,7 +178,6 @@ All models were trained uniformly for 30 epochs on Celeb-DF using Binary Cross-E
 \section{Results}
 
 \subsection{In-Distribution Performance (Celeb-DF)}
-Table~\ref{tab:celebd_results} summarizes performance on the Celeb-DF test set. All seven models plus the best ensemble are compared.
 
 \begin{table}[H]
 \caption{Performance Comparison and Parameter Efficiency on Celeb-DF Test Set}
@@ -204,10 +203,9 @@ Frequency-Aware CNN     & 5.5M  & 99.03\% & \textbf{99.84\%} & 98.92\% & 99.11\%
 \end{tabular}
 \end{table}
 
-The \textbf{Frequency-Aware CNN} achieved the highest standalone AUC (99.84\%), demonstrating that spectral features capture highly discriminative in-distribution signals. Critically, both the Multi-Scale model (4.2M params) and the Frequency-Aware model (5.5M params) matched or exceeded the performance of architectures 7--17$\times$ larger (XceptionNet at 38.9M, ViT at 86.6M), demonstrating that parameter-efficient designs can achieve state-of-the-art detection.
+The \textbf{Frequency-Aware CNN} achieved the highest standalone AUC (99.84\%), demonstrating that spectral features capture highly discriminative in-distribution signals. Critically, both the Multi-Scale model (4.2M params) and the Frequency-Aware model (5.5M params) matched or exceeded the performance of architectures 7--17$\times$ larger (XceptionNet at 38.9M, ViT at 86.6M), demonstrating that parameter-efficient designs can achieve state-of-the-art detection. Note that due to its substantial parameter footprint, the Vision Transformer's training was constrained by early stopping, settling at 90.54\% in-distribution accuracy rather than fully converging.
 
 \subsection{Ensemble Ablation Study}
-Table~\ref{tab:ensemble} presents the systematic ensemble ablation. Six model combinations across three aggregation methods were evaluated on both datasets.
 
 \begin{table}[H]
 \caption{Ensemble Ablation: Soft-Voting Performance Across Configurations}
