@@ -193,13 +193,13 @@ def select_sample_images(data_root, dataset_name, num_per_class=5):
 def create_comparison_grid(image_rgb, model_overlays, model_names, true_label, save_path):
     """Create a comparison grid: original + 7 model Grad-CAMs."""
     n_models = len(model_names)
-    fig, axes = plt.subplots(1, n_models + 1, figsize=(3.5 * (n_models + 1), 4))
+    fig, axes = plt.subplots(1, n_models + 1, figsize=(3.5 * (n_models + 1), 8))
 
     label_str = "REAL" if true_label == 0 else "FAKE"
 
     # Original image
     axes[0].imshow(image_rgb)
-    axes[0].set_title(f"Original\n({label_str})", fontsize=9, fontweight='bold')
+    axes[0].set_title(f"Original\n({label_str})", fontsize=16, fontweight='bold', pad=12)
     axes[0].axis('off')
 
     # Model overlays
@@ -208,11 +208,12 @@ def create_comparison_grid(image_rgb, model_overlays, model_names, true_label, s
         pred_str = "REAL" if pred == 0 else "FAKE"
         correct = "✓" if pred == true_label else "✗"
         color = "green" if pred == true_label else "red"
-        axes[i + 1].set_title(f"{name}\n{pred_str} {conf:.0%} {correct}", fontsize=8, color=color)
+        axes[i + 1].set_title(f"{name}\n{pred_str} {conf:.0%} {correct}", fontsize=14, color=color,
+                               fontweight='bold', pad=12)
         axes[i + 1].axis('off')
 
-    plt.tight_layout()
-    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    plt.tight_layout(pad=2.0)
+    plt.savefig(save_path, dpi=250, bbox_inches='tight')
     plt.close()
 
 

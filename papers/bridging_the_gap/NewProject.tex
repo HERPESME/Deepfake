@@ -1,4 +1,4 @@
-\documentclass[runningheads]{llncs}
+  \documentclass[runningheads]{llncs}
 
 \usepackage{graphicx}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -81,7 +81,7 @@ This work advances the field through the following contributions:
 \begin{enumerate}
     \item Recognition and design of three novel architectures---Hybrid CNN-Transformer (30.7M parameters), Multi-Scale Feature Fusion (4.2M parameters), and Frequency-Aware CNN (5.5M parameters)---pushing in-distribution AUC to 99.84\%.
     \item Comprehensive ensemble ablation: 6 model combinations $\times$ 3 aggregation strategies, establishing a new performance ceiling of 99.51\% accuracy via Soft-Voting.
-    \item Rigorous adversarial evaluation (FGSM and PGD) across all 7 architectures at 5 perturbation budgets, revealing that Vision Transformers exhibit \textit{complete accuracy invariance} under both attack types.
+    \item Rigorous adversarial evaluation (FGSM and PGD) across all 7 architectures at 5 perturbation budgets, revealing that Vision Transformers exhibit \textit{complete adversarial immunity} under both attack types.
     \item Comprehensive cross-dataset evaluation on FaceForensics++ and failure analysis via Grad-CAM across all 7 models on 20 verification images, identifying shared blindspots.
 \end{enumerate}
 
@@ -142,7 +142,7 @@ GAN upsampling introduces spectral artifacts imperceptible in the spatial domain
 \begin{equation}
     \mathcal{F}(u,v) = \sum_{x=0}^{H-1} \sum_{y=0}^{W-1} \mathbf{I}(x,y) \, e^{-j2\pi\left(\frac{ux}{H} + \frac{vy}{W}\right)}
 \end{equation}
-The log-magnitude spectrum $\mathbf{M}(u,v) = \log(1 + |\mathcal{F}(u,v)|)$ is centered via \texttt{fftshift} and processed by a 5-layer CNN ($3 \rightarrow 32 \rightarrow 64 \rightarrow 128 \rightarrow 256 \rightarrow 256$ channels) to yield $\mathbf{v}_{freq} \in \mathbb{R}^{256}$.
+The log-magnitude spectrum $\mathbf{M}(u,v) = \log(1 + |\mathcal{F}(u,v)|)$ is centered via \texttt{fftshift} and processed by a 5-layer CNN to yield $\mathbf{v}_{freq} \in \mathbb{R}^{256}$.
 
 \textbf{Spatial Branch:} A pre-trained EfficientNet-B0 encoder yielding $\mathbf{v}_{spat} \in \mathbb{R}^{256}$.
 
@@ -367,7 +367,7 @@ The experimental results reveal several critical insights:
     \item \textbf{Ensemble Limits:} While ensembling pushed in-distribution performance to 99.51\%, it provided negligible cross-dataset improvement ($<$3\% over single models). Diversity in ensemble members does not compensate for shared inductive biases rooted in spatial feature extraction.
     \item \textbf{Spectral Features Are Distribution-Specific:} Rather than being broadly applicable GAN fingerprints, the spectral signatures of the Frequency-Aware CNN turned out to be unique to Celeb-DF's generation pipeline.
     \item \textbf{Architectural Topology Dictates Adversarial Fate:} Architectural primitives directly correspond to the three-tier adversarial response pattern (collapse, resilience, and immunity): self-attention offers immunity, depthwise separable convolutions offer structural resistance, and standard convolutions are maximally vulnerable. This implies that adversarial robustness is not a training artifact but rather an emergent architectural feature.
-    \item \textbf{ViT's Dual Nature:} The ViT shows the lowest in-distribution accuracy at 90.54\%, but it has the highest cross-dataset accuracy at 66.06\% and complete adversarial prediction invariance. However, its nearly random AUC of 49.26\% and its consistent misclassification of all real images as fake suggest that this invariance probably comes from gradient masking rather than genuine semantic strength. Future research should confirm this by using gradient-free attacks, such as SPSA, or black-box transfer attacks to separate architectural robustness from poor classification behavior.
+    \item \textbf{ViT's Dual Nature:} ViT showing the lowest in-distribution accuracy at 90.54\%, but has the highest cross-dataset accuracy at 66.06\% and complete adversarial prediction invariance. However, its nearly random AUC of 49.26\% and its consistent misclassification of all real images as fake suggest that this invariance probably comes from gradient masking rather than genuine semantic strength. Future research should confirm this by using gradient-free attacks, such as SPSA, or black-box transfer attacks to separate architectural robustness from poor classification behavior.
 \end{enumerate}
 
 \section{Conclusion}

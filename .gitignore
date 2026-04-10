@@ -108,3 +108,8 @@ tmp/
 
 # Generated reports (can be re-created from scripts)
 reports/
+
+####################
+# BTP Report (local-only, not for GitHub)
+####################
+LNMIIT BTP Report Template/
